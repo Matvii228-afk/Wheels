@@ -3026,6 +3026,7 @@ function handleWSMessage(data) {
     ball.serverPayout = data.payout;
     ball.serverBalance = data.balance;
     activeBalls.push(ball);
+    startPlinkoLoop();
   }
 
   // ── MINES (server-side) ──
@@ -3834,9 +3835,18 @@ function startPlinkoLoop() {
   plinkoLoopRunning = true;
   function loop() {
     updateAndDrawPlinko();
-    requestAnimationFrame(loop);
+    if (activeBalls.length > 0) {
+      requestAnimationFrame(loop);
+    } else {
+      plinkoLoopRunning = false;
+      // Нарисовать статичный фон последний раз
+      if (plinkoCtx) {
+        const img = getPlinkoStaticCache();
+        plinkoCtx.drawImage(img, 0, 0);
+      }
+    }
   }
-  loop();
+  requestAnimationFrame(loop);
 }
 
 function updateAndDrawPlinko() {
@@ -3845,83 +3855,63 @@ function updateAndDrawPlinko() {
   const staticImg = getPlinkoStaticCache();
   plinkoCtx.drawImage(staticImg, 0, 0);
 
-  const mults = getPlinkoMults();
   const {pegs, rowH, topY, W, ROWS} = getPegLayout();
-  const bucketCount = ROWS + 1;
-  const bw = (W - 20) / bucketCount;
+  const bw = (W - 20) / (ROWS + 1);
   const bucketY = topY + ROWS * rowH + 8;
   const ctx = plinkoCtx;
 
-  // Update and draw each ball
   activeBalls = activeBalls.filter(ball => {
-    ball.animSubT += 0.055; // ball speed (slower for better visualization)
+    // Гравитационное ускорение: медленно вверху, быстрее внизу
+    const progress = ball.animStep / ball.path.length;
+    const speed = 0.022 + progress * 0.018;
+    ball.animSubT += speed;
 
     const step = ball.animStep;
-    const subT = Math.min(ball.animSubT, 1);
+    const rawT = Math.min(ball.animSubT, 1);
+    // Ease-in для эффекта гравитации
+    const t = rawT * rawT;
 
     let bx, by;
 
     if (step < ball.path.length) {
-      const {row, slot} = ball.path[step];
-      const rowPegs = pegs[row];
+      const {slot} = ball.path[step];
+      const rowPegs = pegs[step];
 
       let srcX, srcY;
       if (step === 0) {
-        srcX = W/2;
-        srcY = topY - 20;
+        srcX = W / 2; srcY = topY - 22;
       } else {
-        const prevPegs = pegs[row-1];
-        const prevSlot = ball.path[step-1].slot;
-        srcX = prevPegs[prevSlot].x;
-        srcY = prevPegs[prevSlot].y;
+        srcX = pegs[step - 1][ball.path[step - 1].slot].x;
+        srcY = pegs[step - 1][ball.path[step - 1].slot].y;
       }
 
       const tgtX = rowPegs[slot].x;
       const tgtY = rowPegs[slot].y;
 
-      // Ball arcs around the peg — control point offset outward so ball
-      // visibly bounces off the peg rather than passing through it.
-      const t = subT;
       const goRight = tgtX >= srcX;
-      const pegR = 5;
-      const ballR = ball.radius || 6;
-      const gap = pegR + ballR;
-
-      // Шар летит по дуге: от src → мимо пега → в tgt
-      // Контрольная точка СБОКУ от целевого пега, чтобы огибал его
       const side = goRight ? -1 : 1;
-      const ctrlX = tgtX + side * gap * 1.5;
-      const ctrlY = tgtY - rowH * 0.5;
+      const ctrlX = tgtX + side * 9;
+      const ctrlY = (srcY + tgtY) / 2 - rowH * 0.15;
 
       bx = (1-t)*(1-t)*srcX + 2*(1-t)*t*ctrlX + t*t*tgtX;
       by = (1-t)*(1-t)*srcY + 2*(1-t)*t*ctrlY + t*t*tgtY;
 
-      // Остановить шар на поверхности пега, не внутри
-      const dx = bx - tgtX, dy = by - tgtY;
-      const dist = Math.sqrt(dx*dx+dy*dy);
-      if (dist < gap && dist > 0 && t > 0.7) {
-        const nx = dx/dist, ny = dy/dist;
-        bx = tgtX + nx*gap;
-        by = tgtY + ny*gap;
-      }
-
-      ball.glow = Math.sin(Date.now()/100) * 0.5 + 0.5;
     } else {
-      // Ball falls into bucket
-      const lastPeg = pegs[ROWS-1][ball.finalSlot];
-      const bucketX = 10 + ball.finalSlot * bw + bw/2;
+      // Падение в корзину
+      const lastPeg = pegs[ROWS - 1][ball.finalSlot];
+      const bucketX = 10 + ball.finalSlot * bw + bw / 2;
+      const dropT = Math.min(rawT * 1.8, 1);
+      bx = lastPeg.x + (bucketX - lastPeg.x) * dropT;
+      by = lastPeg.y + (bucketY + 11 - lastPeg.y) * (dropT * dropT);
 
-      bx = lastPeg.x + (bucketX - lastPeg.x) * Math.min(subT * 2, 1);
-      by = lastPeg.y + (bucketY + 11 - lastPeg.y) * Math.min(subT * 1.5, 1);
-
-      if (subT >= 1) {
+      if (rawT >= 1) {
         if (ball.serverMult !== null) {
           state.balance = ball.serverBalance;
           updateBalanceDisplay();
           updateGameBalance('plinko');
-          const won = ball.serverPayout >= ball.bet;
+          const won = ball.serverPayout > ball.bet;
           const m = ball.serverMult;
-          const mStr = m >= 10 ? '×' + Math.round(m) : m >= 1 ? '×' + m.toFixed(1) : '×' + m.toFixed(2);
+          const mStr = m >= 10 ? '×' + Math.round(m) : '×' + m.toFixed(2);
           showResult(won, won ? '🎊' : '😐', mStr,
             (won ? '+' : '') + Math.floor(ball.serverPayout - ball.bet) + '₽');
         }
@@ -3929,61 +3919,61 @@ function updateAndDrawPlinko() {
       }
     }
 
-    // Advance step when subT reaches 1
     if (ball.animSubT >= 1) {
       ball.animStep++;
       ball.animSubT = 0;
+      ball.bounceScale = 1.35; // вспышка при ударе о пег
       if (ball.animStep < ball.path.length) playSound('plinko_bounce');
     }
+    if (ball.bounceScale > 1) ball.bounceScale -= 0.04;
 
-    // Trail
+    // Хвост — 5 точек, эффективный рендер
     ball.trail.push({x: bx, y: by});
-    if (ball.trail.length > 8) ball.trail.shift();
+    if (ball.trail.length > 5) ball.trail.shift();
 
-    // Draw trail
+    ctx.save();
     ball.trail.forEach((pt, i) => {
-      const alpha = (i / ball.trail.length) * 0.35;
-      const r = ball.radius * (i / ball.trail.length) * 0.7;
+      const a = (i / ball.trail.length) * 0.45;
+      const r = ball.radius * 0.45 * (i / ball.trail.length);
       ctx.beginPath();
-      ctx.arc(pt.x, pt.y, r, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(80,160,255,${alpha})`;
+      ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(120,180,255,${a})`;
       ctx.fill();
     });
 
-    // Draw ball glow
-    const glowR = ball.radius + 4 + ball.glow * 3;
-    const grad = ctx.createRadialGradient(bx, by, 0, bx, by, glowR);
-    grad.addColorStop(0, 'rgba(100,180,255,0.6)');
-    grad.addColorStop(1, 'rgba(60,100,255,0)');
+    // Свечение через shadowBlur (без RadialGradient — в 3× быстрее)
+    const sc = ball.bounceScale || 1;
+    ctx.shadowColor = '#5599ff';
+    ctx.shadowBlur = 10 + (sc - 1) * 20;
     ctx.beginPath();
-    ctx.arc(bx, by, glowR, 0, Math.PI*2);
-    ctx.fillStyle = grad;
+    ctx.arc(bx, by, ball.radius * sc, 0, Math.PI * 2);
+    ctx.fillStyle = '#4488ff';
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Блик (белая точка сверху-слева)
+    ctx.beginPath();
+    ctx.arc(bx - ball.radius * 0.3, by - ball.radius * 0.3, ball.radius * 0.28, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.fill();
 
-    // Draw ball
-    const ballGrad = ctx.createRadialGradient(bx-2, by-2, 1, bx, by, ball.radius);
-    ballGrad.addColorStop(0, '#a0d0ff');
-    ballGrad.addColorStop(0.5, '#4488ff');
-    ballGrad.addColorStop(1, '#1133cc');
-    ctx.beginPath();
-    ctx.arc(bx, by, ball.radius, 0, Math.PI*2);
-    ctx.fillStyle = ballGrad;
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    return true; // keep ball
+    ctx.restore();
+    return true;
   });
 }
 
 function playPlinkoGame() {
-  if (activeBalls.length >= 10) return; // limit concurrent balls
+  if (activeBalls.length >= 10) return;
   const bet = getBet('plinkoBet');
   if (!canBet(bet)) return;
 
   const sent = wsSend({ action: 'play_plinko', amount: bet, rows: plinkoSettings.rows, risk: plinkoSettings.risk });
   if (!sent) { showResult(false,'⚠️','Нет соединения',''); return; }
+
+  // Списать сразу, чтобы нельзя было кинуть шары с нулевым балансом
+  state.balance -= bet;
+  updateBalanceDisplay();
+  updateGameBalance('plinko');
   tg?.HapticFeedback?.impactOccurred('light');
 }
 
