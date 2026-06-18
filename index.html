@@ -921,8 +921,8 @@
      EARN SCREEN
   ══════════════════════════════════ */
   #earn-screen {
-    padding: 20px 16px 80px;
-    background: radial-gradient(ellipse at 50% 0%, #1a1a00 0%, var(--dark) 70%);
+    padding: 0;
+    background: var(--bg);
   }
 
   .earn-header {
@@ -1299,14 +1299,14 @@
 
   /* ── EARN SCREEN ── */
   #earn-screen {
-    padding: 20px 16px 80px;
+    padding: 0;
     background: var(--bg);
     min-height: 100vh;
   }
 
   /* ── PROFILE SCREEN ── */
   #profile-screen {
-    padding: 20px 16px 80px;
+    padding: 0;
     background: var(--bg);
     min-height: 100vh;
   }
@@ -1689,51 +1689,83 @@
     </div>
   </div>
 
-  <div class="section-title">🎮 Игры</div>
+  <!-- Tasks section -->
+  <div style="padding:0 16px 8px">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;padding:0 2px">📋 Задания</div>
+    <!-- Static referral task (non-completable — выполняется автоматически через рефералов) -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+      <div style="width:42px;height:42px;border-radius:12px;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">👥</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700">Приведи активного друга</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Реферал с депозитом = автобонус через рефералов</div>
+      </div>
+      <div style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-weight:900;font-size:13px;padding:6px 12px;border-radius:20px;white-space:nowrap;flex-shrink:0">+20₽</div>
+    </div>
+    <!-- Dynamic tasks from server -->
+    <div id="tasksList"><div style="text-align:center;padding:16px;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:14px;font-size:13px">Загрузка...</div></div>
+  </div>
 
-  <div class="game-grid">
-    <div class="game-card" onclick="openGame('slots')">
-      <span class="badge badge-hot">HOT</span>
-      <div class="game-icon">🎰</div>
-      <div class="game-name">Слоты</div>
-      <div class="game-desc">до х50</div>
-    </div>
-    <div class="game-card" onclick="openGame('dice')">
-      <div class="game-icon">🎲</div>
-      <div class="game-name">Дайс</div>
-      <div class="game-desc">Угадай кубик</div>
-    </div>
-    <div class="game-card" onclick="openGame('coinflip')">
-      <div class="game-icon">🪙</div>
-      <div class="game-name">Флип Коин</div>
-      <div class="game-desc">х2 орёл/решка</div>
-    </div>
-    <div class="game-card" onclick="openGame('plinko')">
-      <div class="game-icon">🔵</div>
-      <div class="game-name">Плинко</div>
-      <div class="game-desc">Шарик удачи</div>
-    </div>
-    <div class="game-card" onclick="openGame('mines')">
-      <span class="badge badge-hot">HOT</span>
-      <div class="game-icon">💣</div>
-      <div class="game-name">Минки</div>
-      <div class="game-desc">Мины • множитель растёт</div>
-    </div>
-    <div class="game-card online" onclick="openGame('crash')">
-      <span class="badge badge-live">LIVE</span>
-      <div class="game-icon">🚀</div>
-      <div class="game-name">Краш</div>
-      <div class="game-desc">Вылети до крэша!</div>
-    </div>
-    <div class="game-card online" onclick="openGame('wheel')" style="grid-column:1/-1">
-      <span class="badge badge-live">LIVE</span>
-      <div class="game-icon">🎡</div>
-      <div class="game-name">Колесо</div>
-      <div class="game-desc">х2 х3 х5 х20 — Реальное онлайн колесо</div>
-    </div>
+  <!-- Promo code -->
+  <div style="margin:0 16px 16px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px">
+    <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">🎟️ Промокод</div>
+    <input id="promoInput" type="text" placeholder="Введи промокод..." maxlength="32"
+      style="width:100%;box-sizing:border-box;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;font-weight:700;outline:none;text-transform:uppercase;margin-bottom:8px"
+      oninput="this.value=this.value.toUpperCase()">
+    <button onclick="activatePromo()" style="width:100%;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:14px;font-weight:900;cursor:pointer">Активировать</button>
+    <div id="promoStatus" style="font-size:12px;margin-top:8px;display:none"></div>
   </div>
 
   <div style="height:80px"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     GAMES SCREEN
+══════════════════════════════════ -->
+<div class="screen" id="games-screen">
+  <div style="padding:16px 16px 80px;background:var(--bg);min-height:100vh">
+    <div style="font-size:20px;font-weight:900;margin-bottom:16px">🎮 Все игры</div>
+    <div class="game-grid">
+      <div class="game-card" onclick="openGame('slots')">
+        <span class="badge badge-hot">HOT</span>
+        <div class="game-icon">🎰</div>
+        <div class="game-name">Слоты</div>
+        <div class="game-desc">до х50</div>
+      </div>
+      <div class="game-card" onclick="openGame('dice')">
+        <div class="game-icon">🎲</div>
+        <div class="game-name">Дайс</div>
+        <div class="game-desc">Угадай кубик</div>
+      </div>
+      <div class="game-card" onclick="openGame('coinflip')">
+        <div class="game-icon">🪙</div>
+        <div class="game-name">Флип Коин</div>
+        <div class="game-desc">х2 орёл/решка</div>
+      </div>
+      <div class="game-card" onclick="openGame('plinko')">
+        <div class="game-icon">🔵</div>
+        <div class="game-name">Плинко</div>
+        <div class="game-desc">Шарик удачи</div>
+      </div>
+      <div class="game-card" onclick="openGame('mines')">
+        <span class="badge badge-hot">HOT</span>
+        <div class="game-icon">💣</div>
+        <div class="game-name">Минки</div>
+        <div class="game-desc">Мины • множитель растёт</div>
+      </div>
+      <div class="game-card online" onclick="openGame('crash')">
+        <span class="badge badge-live">LIVE</span>
+        <div class="game-icon">🚀</div>
+        <div class="game-name">Краш</div>
+        <div class="game-desc">Вылети до крэша!</div>
+      </div>
+      <div class="game-card online" onclick="openGame('wheel')" style="grid-column:1/-1">
+        <span class="badge badge-live">LIVE</span>
+        <div class="game-icon">🎡</div>
+        <div class="game-name">Колесо</div>
+        <div class="game-desc">х2 х3 х5 х20 — Реальное онлайн колесо</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════
@@ -2186,31 +2218,10 @@
 <div class="screen" id="earn-screen">
   <div style="padding:0 0 80px">
 
-    <!-- HEADER -->
-    <div style="text-align:center;padding:20px 16px 14px">
-      <div style="font-size:44px">💎</div>
-      <div style="font-size:20px;font-weight:900;margin-top:6px">Заработать</div>
-    </div>
-
-    <!-- TASKS (сверху) -->
-    <div style="margin:0 14px 14px">
-      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;padding:0 2px">📋 Задания</div>
-      <div id="tasksList">
-        <div style="text-align:center;padding:20px;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:14px;font-size:13px">Загрузка...</div>
-      </div>
-    </div>
-
-    <!-- PROMO CODE -->
-    <div style="margin:0 14px 14px;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px">
-      <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">🎟️ Промокод</div>
-      <input id="promoInput" type="text" placeholder="Введи промокод..." maxlength="32"
-        style="width:100%;box-sizing:border-box;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:10px 12px;color:var(--text);font-size:14px;font-weight:700;outline:none;text-transform:uppercase;margin-bottom:8px"
-        oninput="this.value=this.value.toUpperCase()">
-      <button onclick="activatePromo()"
-        style="width:100%;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:14px;font-weight:900;cursor:pointer">
-        Активировать
-      </button>
-      <div id="promoStatus" style="font-size:12px;margin-top:8px;display:none"></div>
+    <!-- HEADER with back button -->
+    <div style="display:flex;align-items:center;gap:14px;padding:16px;border-bottom:1px solid var(--border);background:var(--card)">
+      <button onclick="goBackFromEarn()" style="width:36px;height:36px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1">‹</button>
+      <span style="font-size:18px;font-weight:800">🤝 Рефералы</span>
     </div>
 
     <!-- REFERRALS — merged card -->
@@ -2288,65 +2299,113 @@
      PROFILE
 ══════════════════════════════════ -->
 <div class="screen" id="profile-screen">
-  <div class="profile-header">
-    <div class="profile-avatar" id="profileAvatar" style="overflow:hidden;display:flex;align-items:center;justify-content:center">🎡</div>
-    <div class="profile-name" id="profileName">Игрок</div>
-    <div class="profile-id" id="profileId">ID: —</div>
-    <div style="margin-top:12px;background:linear-gradient(135deg,#1a1a3a,#0d0d20);border:1px solid var(--gold);border-radius:16px;padding:14px 24px;display:inline-block">
-      <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px">Баланс</div>
-      <div style="font-size:32px;font-weight:900;color:var(--gold)" id="profileBalance">0₽</div>
-    </div>
-    <div style="display:flex;gap:10px;margin-top:14px;padding:0 16px">
-      <button onclick="openDepositModal()" style="flex:1;padding:12px;border-radius:14px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:14px;font-weight:800;cursor:pointer">💎 Пополнить</button>
-      <button onclick="openWithdrawModal()" style="flex:1;padding:12px;border-radius:14px;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-size:14px;font-weight:800;cursor:pointer">💸 Вывод</button>
-    </div>
-  </div>
+  <div style="padding:16px 16px 80px;background:var(--bg);min-height:100vh">
 
-  <div class="stats-grid" style="padding:0 16px">
-    <div class="stats-item">
-      <div class="icon">🎲</div>
-      <div class="value" id="pTotalBets">0</div>
-      <div class="label">Всего ставок</div>
+    <!-- User card -->
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:18px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+        <div id="profileAvatar" style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;overflow:hidden">🎡</div>
+        <div style="flex:1;min-width:0">
+          <div id="profileName" style="font-size:18px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Игрок</div>
+          <div id="profileId" style="font-size:12px;color:var(--muted);margin-top:2px">ID: —</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Баланс</div>
+          <div id="profileBalance" style="font-size:22px;font-weight:900;color:var(--gold)">0₽</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="openDepositModal()" style="padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:13px;font-weight:800;cursor:pointer">💎 Пополнить</button>
+        <button onclick="openWithdrawModal()" style="padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-size:13px;font-weight:800;cursor:pointer">💸 Вывод</button>
+      </div>
     </div>
-    <div class="stats-item">
-      <div class="icon">✅</div>
-      <div class="value green" id="pTotalWins">0</div>
-      <div class="label">Выигрышей</div>
-    </div>
-    <div class="stats-item">
-      <div class="icon">❌</div>
-      <div class="value red" id="pTotalLosses">0</div>
-      <div class="label">Проигрышей</div>
-    </div>
-    <div class="stats-item">
-      <div class="icon">💸</div>
-      <div class="value" id="pWagered">0₽</div>
-      <div class="label">Поставлено</div>
-    </div>
-    <div class="stats-item">
-      <div class="icon">🏆</div>
-      <div class="value" id="pWon">0₽</div>
-      <div class="label">Выиграно</div>
-    </div>
-  </div>
 
-  <!-- THEME SWITCHER -->
-  <div style="padding: 20px 16px 0">
-    <div class="section-title" style="padding:0 0 10px">🎨 Тема оформления</div>
-    <div class="theme-switcher">
-      <div class="theme-btn active" id="theme-dark" onclick="setTheme('dark')">
-        <div class="theme-dot theme-preview-dark"></div>
-        Тёмная
+    <!-- Stats row -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center">
+        <div style="font-size:20px;font-weight:800" id="pTotalBets">0</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Ставок</div>
       </div>
-      <div class="theme-btn" id="theme-light" onclick="setTheme('light')">
-        <div class="theme-dot theme-preview-light"></div>
-        Белая
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center">
+        <div style="font-size:20px;font-weight:800;color:var(--green)" id="pTotalWins">0</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Выигрышей</div>
       </div>
-      <div class="theme-btn" id="theme-blue" onclick="setTheme('blue')">
-        <div class="theme-dot theme-preview-blue"></div>
-        Голубая
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px;text-align:center">
+        <div style="font-size:20px;font-weight:800;color:var(--gold)" id="pWagered">0₽</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Поставлено</div>
       </div>
     </div>
+    <!-- Hidden stats elements (required by loadProfile) -->
+    <span id="pTotalLosses" style="display:none">0</span>
+    <span id="pWon" style="display:none">0₽</span>
+
+    <!-- Section: Аккаунт -->
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:0 4px;margin-bottom:8px">⚙️ Аккаунт</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:6px">
+      <div onclick="toggleThemePanelProfile()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">🎨</div>
+        <div style="flex:1;font-size:15px;font-weight:600">Тема оформления</div>
+        <div style="color:var(--muted);font-size:20px">›</div>
+      </div>
+    </div>
+    <!-- Theme panel accordion -->
+    <div id="themePanelProfile" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:6px">
+      <div class="theme-switcher">
+        <div class="theme-btn active" id="theme-dark" onclick="setTheme('dark')">
+          <div class="theme-dot theme-preview-dark"></div>
+          Тёмная
+        </div>
+        <div class="theme-btn" id="theme-light" onclick="setTheme('light')">
+          <div class="theme-dot theme-preview-light"></div>
+          Белая
+        </div>
+        <div class="theme-btn" id="theme-blue" onclick="setTheme('blue')">
+          <div class="theme-dot theme-preview-blue"></div>
+          Голубая
+        </div>
+      </div>
+    </div>
+
+    <!-- Section: Дополнительно -->
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:0 4px;margin-bottom:8px;margin-top:14px">📱 Дополнительно</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:6px">
+      <div onclick="goToReferrals()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">🤝</div>
+        <div style="flex:1;font-size:15px;font-weight:600">Рефералы</div>
+        <div style="color:var(--muted);font-size:20px">›</div>
+      </div>
+      <div onclick="showComingSoon('История транзакций')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(99,102,241,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📋</div>
+        <div style="flex:1;font-size:15px;font-weight:600">История транзакций</div>
+        <div style="color:var(--muted);font-size:20px">›</div>
+      </div>
+      <div onclick="addToHomeScreen()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(251,191,36,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📲</div>
+        <div style="flex:1;font-size:15px;font-weight:600">Добавить на главный экран</div>
+        <div style="color:var(--muted);font-size:20px">›</div>
+      </div>
+      <div onclick="showComingSoon('Сообщество')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">👥</div>
+        <div style="flex:1;font-size:15px;font-weight:600">Сообщество</div>
+        <div style="color:var(--muted);font-size:20px">›</div>
+      </div>
+      <div onclick="showComingSoon('Чат пользователей')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(236,72,153,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">💬</div>
+        <div style="flex:1;font-size:15px;font-weight:600">Чат пользователей</div>
+        <div style="color:var(--muted);font-size:20px">›</div>
+      </div>
+    </div>
+
+    <!-- Section: Контакты -->
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:0 4px;margin-bottom:8px;margin-top:14px">📞 Контакты</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px">
+      <div onclick="openContactsModal()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(14,165,233,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📞</div>
+        <div style="flex:1;font-size:15px;font-weight:600">Контакты</div>
+        <div style="color:var(--muted);font-size:20px">›</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -2437,14 +2496,38 @@
   </div>
 </div>
 
+<!-- CONTACTS MINI MODAL -->
+<div id="contactsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeContactsModal()">
+  <div style="background:var(--card);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:480px">
+    <div style="font-size:16px;font-weight:900;margin-bottom:16px;text-align:center">📞 Контакты</div>
+    <div onclick="openCollaboration()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;background:var(--card2);border-radius:14px;margin-bottom:8px">
+      <div style="width:40px;height:40px;border-radius:12px;background:rgba(14,165,233,0.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">💼</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700">Сотрудничество</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Реклама и партнёрство</div>
+      </div>
+      <div style="color:var(--muted);font-size:20px">›</div>
+    </div>
+    <div onclick="openSupport();closeContactsModal();" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;background:var(--card2);border-radius:14px;margin-bottom:16px">
+      <div style="width:40px;height:40px;border-radius:12px;background:rgba(99,102,241,0.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">💬</div>
+      <div style="flex:1">
+        <div style="font-size:15px;font-weight:700">Поддержка</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Помощь и вопросы</div>
+      </div>
+      <div style="color:var(--muted);font-size:20px">›</div>
+    </div>
+    <button onclick="closeContactsModal()" style="width:100%;padding:12px;border-radius:12px;border:none;background:rgba(255,255,255,0.06);color:var(--muted);font-size:14px;cursor:pointer">Закрыть</button>
+  </div>
+</div>
+
 <nav class="nav-bar">
   <div class="nav-item active" onclick="showTab('home',this)">
     <span class="nav-icon">🏠</span>
     <span>Главная</span>
   </div>
-  <div class="nav-item" onclick="showTab('earn-screen',this)">
-    <span class="nav-icon">💎</span>
-    <span>Заработать</span>
+  <div class="nav-item" onclick="showTab('games-screen',this)">
+    <span class="nav-icon">🎮</span>
+    <span>Игры</span>
   </div>
   <div class="nav-item" onclick="showTab('profile-screen',this)">
     <span class="nav-icon">👤</span>
@@ -2838,6 +2921,10 @@ function handleWSMessage(data) {
     if (data.support_username != null) {
       _supportUsername = data.support_username;
     }
+    if (data.collaboration_username != null) {
+      _collaborationUsername = data.collaboration_username;
+    }
+    wsSend({ action: 'get_tasks' });
   }
 
   if (type === 'balance') {
@@ -3270,15 +3357,19 @@ document.addEventListener('click', () => getAudio(), {once: true});
 let currentScreen = 'home';
 
 function showTab(id, el) {
-  // If a game is open, close it first
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  el.classList.add('active');
+  if (el) el.classList.add('active');
   currentScreen = id;
+  if (id === 'home') {
+    wsSend({ action: 'get_tasks' });
+  }
+  if (id === 'profile-screen') {
+    loadProfile();
+  }
   if (id === 'earn-screen') {
     wsSend({ action: 'get_referrals' });
-    wsSend({ action: 'get_tasks' });
   }
 }
 
@@ -5203,9 +5294,10 @@ try {
 console.log('🎡 Wheels WebApp ready!');
 
 // ══════════════════════════════════
-// ПОДДЕРЖКА
+// ПОДДЕРЖКА И КОНТАКТЫ
 // ══════════════════════════════════
 let _supportUsername = '';
+let _collaborationUsername = '';
 
 function openSupport() {
   if (!_supportUsername) {
@@ -5215,6 +5307,57 @@ function openSupport() {
   const url = 'https://t.me/' + _supportUsername.replace('@', '');
   if (tg && tg.openLink) tg.openLink(url);
   else window.open(url, '_blank');
+}
+
+function openCollaboration() {
+  closeContactsModal();
+  if (!_collaborationUsername) {
+    showResult(false, '💼', 'Контакт не настроен', '');
+    return;
+  }
+  const url = 'https://t.me/' + _collaborationUsername.replace('@', '');
+  if (tg && tg.openLink) tg.openLink(url);
+  else window.open(url, '_blank');
+}
+
+function openContactsModal() {
+  const m = document.getElementById('contactsModal');
+  if (m) m.style.display = 'flex';
+}
+
+function closeContactsModal() {
+  const m = document.getElementById('contactsModal');
+  if (m) m.style.display = 'none';
+}
+
+function goToReferrals() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('earn-screen').classList.add('active');
+  currentScreen = 'earn-screen';
+  wsSend({ action: 'get_referrals' });
+}
+
+function goBackFromEarn() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('profile-screen').classList.add('active');
+  currentScreen = 'profile-screen';
+}
+
+function toggleThemePanelProfile() {
+  const p = document.getElementById('themePanelProfile');
+  if (p) p.style.display = (p.style.display === 'none' || p.style.display === '') ? 'block' : 'none';
+}
+
+function addToHomeScreen() {
+  if (tg && tg.addToHomeScreen) {
+    tg.addToHomeScreen();
+  } else {
+    showResult(false, '📲', 'Только в Telegram', 'Открой через Telegram для добавления на экран');
+  }
+}
+
+function showComingSoon(name) {
+  showResult(false, '🔧', name, 'Скоро доступно');
 }
 
 // ══════════════════════════════════
