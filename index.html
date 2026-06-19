@@ -2347,9 +2347,14 @@
         <div style="flex:1;font-size:15px;font-weight:600">Тема оформления</div>
         <div style="color:var(--muted);font-size:20px">›</div>
       </div>
-      <div onclick="openTransactionHistory()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer">
+      <div onclick="openTransactionHistory()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
         <div style="width:34px;height:34px;border-radius:9px;background:rgba(99,102,241,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📋</div>
         <div style="flex:1;font-size:15px;font-weight:600">История транзакций</div>
+        <div style="color:var(--muted);font-size:20px">›</div>
+      </div>
+      <div onclick="goToReferrals()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">🤝</div>
+        <div style="flex:1;font-size:15px;font-weight:600">Рефералы</div>
         <div style="color:var(--muted);font-size:20px">›</div>
       </div>
     </div>
@@ -2374,17 +2379,12 @@
     <!-- Section: Дополнительно -->
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:0 4px;margin-bottom:8px;margin-top:14px">📱 Дополнительно</div>
     <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px">
-      <div onclick="goToReferrals()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
-        <div style="width:34px;height:34px;border-radius:9px;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">🤝</div>
-        <div style="flex:1;font-size:15px;font-weight:600">Рефералы</div>
-        <div style="color:var(--muted);font-size:20px">›</div>
-      </div>
       <div onclick="addToHomeScreen()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
         <div style="width:34px;height:34px;border-radius:9px;background:rgba(251,191,36,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📲</div>
         <div style="flex:1;font-size:15px;font-weight:600">Добавить на главный экран</div>
         <div style="color:var(--muted);font-size:20px">›</div>
       </div>
-      <div onclick="showComingSoon('Сообщество')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
+      <div onclick="openCommunity()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
         <div style="width:34px;height:34px;border-radius:9px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">👥</div>
         <div style="flex:1;font-size:15px;font-weight:600">Сообщество</div>
         <div style="color:var(--muted);font-size:20px">›</div>
@@ -2747,6 +2747,10 @@ function wsSend(data) {
   return false;
 }
 
+function _esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 function handleWSMessage(data) {
   const type = data.type;
   
@@ -2931,6 +2935,9 @@ function handleWSMessage(data) {
     }
     if (data.chat_users_link != null) {
       _chatUsersLink = data.chat_users_link;
+    }
+    if (data.community_link != null) {
+      _communityLink = data.community_link;
     }
     wsSend({ action: 'get_tasks' });
   }
@@ -3197,8 +3204,8 @@ function renderCrashBets(bets) {
   if (!list) return;
   list.innerHTML = bets.slice(0, 8).map(b => `
     <div class="online-bet-item">
-      <span class="online-bet-user">${b.avatar} ${b.name}</span>
-      <span class="online-bet-amount">${b.amount}₽</span>
+      <span class="online-bet-user">${_esc(b.avatar)} ${_esc(b.name)}</span>
+      <span class="online-bet-amount">${parseFloat(b.amount).toFixed(0)}₽</span>
       <span class="online-bet-mult ${b.cashed_out ? 'won' : ''}">${b.cashed_out ? '×' + b.cashout_mult?.toFixed(2) : '—'}</span>
     </div>`).join('');
 }
@@ -4497,8 +4504,8 @@ function renderCrashBets() {
   const list = document.getElementById('crashBetsList');
   list.innerHTML = crashState.bets.slice(0,8).map(b => `
     <div class="online-bet-item">
-      <span class="online-bet-user">${b.user}</span>
-      <span class="online-bet-amount">${b.amount}₽</span>
+      <span class="online-bet-user">${_esc(b.user)}</span>
+      <span class="online-bet-amount">${parseFloat(b.amount).toFixed(0)}₽</span>
       <span class="online-bet-mult ${b.cashout ? 'won' : ''}">${b.cashout ? `×${parseFloat(b.cashout).toFixed(2)}` : '—'}</span>
     </div>
   `).join('');
@@ -5306,6 +5313,7 @@ console.log('🎡 Wheels WebApp ready!');
 let _supportUsername = '';
 let _collaborationUsername = '';
 let _chatUsersLink = '';
+let _communityLink = '';
 
 function openSupport() {
   if (!_supportUsername) {
@@ -5372,6 +5380,12 @@ function openChatUsers() {
   if (!_chatUsersLink) { showResult(false, '💬', 'Чат не настроен', ''); return; }
   if (tg && tg.openLink) tg.openLink(_chatUsersLink);
   else window.open(_chatUsersLink, '_blank');
+}
+
+function openCommunity() {
+  if (!_communityLink) { showResult(false, '👥', 'Сообщество не настроено', ''); return; }
+  if (tg && tg.openLink) tg.openLink(_communityLink);
+  else window.open(_communityLink, '_blank');
 }
 
 function openTransactionHistory() {
