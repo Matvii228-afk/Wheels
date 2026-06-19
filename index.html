@@ -1696,8 +1696,8 @@
     <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
       <div style="width:42px;height:42px;border-radius:12px;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">👥</div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:14px;font-weight:700">Приведи активного друга</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">Реферал с депозитом = автобонус через рефералов</div>
+        <div style="font-size:14px;font-weight:700">Привести друга</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Забирай бонус в рефералах</div>
       </div>
       <div style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-weight:900;font-size:13px;padding:6px 12px;border-radius:20px;white-space:nowrap;flex-shrink:0">+20₽</div>
     </div>
@@ -2250,7 +2250,7 @@
       <!-- bonus claim row -->
       <div style="margin:0;padding:12px 16px;background:rgba(34,197,94,.08);border-top:1px solid rgba(34,197,94,.2);border-bottom:1px solid rgba(34,197,94,.2);display:flex;align-items:center;justify-content:space-between;gap:10px">
         <div>
-          <div style="font-size:12px;color:#22c55e;font-weight:700" id="refBonusDesc">+10% с первого депозита реферала</div>
+          <div style="font-size:12px;color:#22c55e;font-weight:700" id="refBonusDesc">+5% с каждого депозита</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px">К получению: <span id="refPendingAmt" style="color:#22c55e;font-weight:800">0₽</span></div>
         </div>
         <button id="refClaimBtn" onclick="claimReferralBonus()"
@@ -2342,9 +2342,14 @@
     <!-- Section: Аккаунт -->
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:0 4px;margin-bottom:8px">⚙️ Аккаунт</div>
     <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:6px">
-      <div onclick="toggleThemePanelProfile()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer">
+      <div onclick="toggleThemePanelProfile()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
         <div style="width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">🎨</div>
         <div style="flex:1;font-size:15px;font-weight:600">Тема оформления</div>
+        <div style="color:var(--muted);font-size:20px">›</div>
+      </div>
+      <div onclick="openTransactionHistory()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(99,102,241,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📋</div>
+        <div style="flex:1;font-size:15px;font-weight:600">История транзакций</div>
         <div style="color:var(--muted);font-size:20px">›</div>
       </div>
     </div>
@@ -2368,15 +2373,10 @@
 
     <!-- Section: Дополнительно -->
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:0 4px;margin-bottom:8px;margin-top:14px">📱 Дополнительно</div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:6px">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px">
       <div onclick="goToReferrals()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
         <div style="width:34px;height:34px;border-radius:9px;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">🤝</div>
         <div style="flex:1;font-size:15px;font-weight:600">Рефералы</div>
-        <div style="color:var(--muted);font-size:20px">›</div>
-      </div>
-      <div onclick="showComingSoon('История транзакций')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
-        <div style="width:34px;height:34px;border-radius:9px;background:rgba(99,102,241,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📋</div>
-        <div style="flex:1;font-size:15px;font-weight:600">История транзакций</div>
         <div style="color:var(--muted);font-size:20px">›</div>
       </div>
       <div onclick="addToHomeScreen()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
@@ -2389,16 +2389,11 @@
         <div style="flex:1;font-size:15px;font-weight:600">Сообщество</div>
         <div style="color:var(--muted);font-size:20px">›</div>
       </div>
-      <div onclick="showComingSoon('Чат пользователей')" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer">
+      <div onclick="openChatUsers()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
         <div style="width:34px;height:34px;border-radius:9px;background:rgba(236,72,153,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">💬</div>
         <div style="flex:1;font-size:15px;font-weight:600">Чат пользователей</div>
         <div style="color:var(--muted);font-size:20px">›</div>
       </div>
-    </div>
-
-    <!-- Section: Контакты -->
-    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;padding:0 4px;margin-bottom:8px;margin-top:14px">📞 Контакты</div>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px">
       <div onclick="openContactsModal()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer">
         <div style="width:34px;height:34px;border-radius:9px;background:rgba(14,165,233,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📞</div>
         <div style="flex:1;font-size:15px;font-weight:600">Контакты</div>
@@ -2487,12 +2482,22 @@
      FOOTER (18+, ссылки)
 ══════════════════════════════════ -->
 <div style="text-align:center;padding:12px 16px 90px;color:var(--muted);font-size:11px;line-height:1.8">
-  <div style="font-size:15px;font-weight:900;color:var(--muted);margin-bottom:4px">🔞 18+</div>
-  Игра на деньги может вызывать зависимость.<br>Играйте ответственно. Только для совершеннолетних.
-  <div style="display:flex;justify-content:center;gap:16px;margin-top:8px;flex-wrap:wrap">
+  <div style="font-size:15px;font-weight:900;color:var(--muted);margin-bottom:8px">🔞 18+</div>
+  <div style="display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap">
     <span onclick="openDocModal('terms')" style="color:var(--gold);cursor:pointer;text-decoration:underline">Условия использования</span>
     <span onclick="openDocModal('privacy')" style="color:var(--gold);cursor:pointer;text-decoration:underline">Конфиденциальность</span>
-    <span onclick="openSupport()" style="color:var(--gold);cursor:pointer;text-decoration:underline">Поддержка</span>
+    <button onclick="openSupport()" style="background:rgba(255,215,0,0.1);border:1px solid rgba(255,215,0,0.3);border-radius:8px;color:var(--gold);padding:4px 12px;font-size:11px;cursor:pointer;font-weight:600">Поддержка</button>
+  </div>
+</div>
+
+<!-- TRANSACTION HISTORY MODAL -->
+<div id="txModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeTxModal()">
+  <div style="background:var(--card);border-radius:24px 24px 0 0;padding:20px;width:100%;max-width:480px;max-height:80vh;display:flex;flex-direction:column">
+    <div style="font-size:16px;font-weight:900;margin-bottom:16px;text-align:center">📋 История транзакций</div>
+    <div id="txList" style="overflow-y:auto;flex:1;min-height:0">
+      <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">Загрузка...</div>
+    </div>
+    <button onclick="closeTxModal()" style="width:100%;padding:12px;border-radius:12px;border:none;background:rgba(255,255,255,0.06);color:var(--muted);font-size:14px;cursor:pointer;margin-top:12px;flex-shrink:0">Закрыть</button>
   </div>
 </div>
 
@@ -2924,6 +2929,9 @@ function handleWSMessage(data) {
     if (data.collaboration_username != null) {
       _collaborationUsername = data.collaboration_username;
     }
+    if (data.chat_users_link != null) {
+      _chatUsersLink = data.chat_users_link;
+    }
     wsSend({ action: 'get_tasks' });
   }
 
@@ -2978,6 +2986,10 @@ function handleWSMessage(data) {
     showResult(false, '⚠️', data.msg, '');
   }
 
+  if (type === 'transactions_data') {
+    renderTransactions(data.transactions || []);
+  }
+
   if (type === 'promo_ok') {
     state.balance = data.balance;
     updateBalanceDisplay();
@@ -2997,7 +3009,7 @@ function handleWSMessage(data) {
     if (data.ref_percent != null) {
       const pct = data.ref_percent;
       const el = document.getElementById('refBonusDesc');
-      if (el) el.textContent = `+${pct}% с первого депозита реферала`;
+      if (el) el.textContent = `+${pct}% с каждого депозита`;
     }
     if (data.ref_active_bonus != null) {
       const lbl = document.getElementById('refActiveBonusLabel');
@@ -5063,41 +5075,36 @@ function loadTasks() {
 function renderTasks() {
   const list = document.getElementById('tasksList');
   if (!list) return;
-  if (!tasksData.tasks.length) {
-    list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:14px;font-size:13px">Заданий пока нет</div>`;
+  const visibleTasks = tasksData.tasks.filter(t => !tasksData.completed.includes(t.id));
+  if (!visibleTasks.length) {
+    list.innerHTML = `<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">Заданий пока нет</div>`;
     return;
   }
   const REQ_ICONS = { subscribe: '📢', invite: '👥', none: '🎁' };
-  list.innerHTML = tasksData.tasks.map(t => {
-    const done = tasksData.completed.includes(t.id);
+  list.innerHTML = visibleTasks.map(t => {
     const icon = REQ_ICONS[t.requirement_type] || '🎯';
     const isSubscribe = t.requirement_type === 'subscribe';
     const pending = taskPending.has(t.id);
 
     let actionBtn = '';
-    if (!done) {
-      if (isSubscribe && !pending) {
-        actionBtn = `<button onclick="doTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-size:12px;font-weight:900;cursor:pointer">📢 Перейти</button>`;
-      } else if (isSubscribe && pending) {
-        actionBtn = `<button onclick="checkTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:12px;font-weight:900;cursor:pointer">✅ Проверить</button>`;
-      } else {
-        actionBtn = `<button onclick="doTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:12px;font-weight:900;cursor:pointer">Забрать</button>`;
-      }
+    if (isSubscribe && !pending) {
+      actionBtn = `<button onclick="doTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-size:12px;font-weight:900;cursor:pointer">📢 Перейти</button>`;
+    } else if (isSubscribe && pending) {
+      actionBtn = `<button onclick="checkTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:12px;font-weight:900;cursor:pointer">✅ Проверить</button>`;
+    } else {
+      actionBtn = `<button onclick="doTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:12px;font-weight:900;cursor:pointer">Забрать</button>`;
     }
 
     return `
-    <div style="background:var(--card);border:1px solid ${done?'var(--green)':'var(--border)'};border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;opacity:${done?'0.7':'1'}">
-      <div style="width:42px;height:42px;border-radius:12px;background:${done?'rgba(0,232,122,0.15)':'rgba(255,215,0,0.1)'};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${done?'✅':icon}</div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+      <div style="width:42px;height:42px;border-radius:12px;background:rgba(255,215,0,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${icon}</div>
       <div style="flex:1;min-width:0">
         <div style="font-size:14px;font-weight:700">${t.title}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">${t.description||''}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
         <div style="font-size:15px;font-weight:900;color:var(--gold)">+${t.reward_amount}₽</div>
-        ${done
-          ? '<div style="font-size:10px;color:var(--green);margin-top:2px">Выполнено</div>'
-          : actionBtn
-        }
+        ${actionBtn}
       </div>
     </div>`;
   }).join('');
@@ -5298,6 +5305,7 @@ console.log('🎡 Wheels WebApp ready!');
 // ══════════════════════════════════
 let _supportUsername = '';
 let _collaborationUsername = '';
+let _chatUsersLink = '';
 
 function openSupport() {
   if (!_supportUsername) {
@@ -5358,6 +5366,63 @@ function addToHomeScreen() {
 
 function showComingSoon(name) {
   showResult(false, '🔧', name, 'Скоро доступно');
+}
+
+function openChatUsers() {
+  if (!_chatUsersLink) { showResult(false, '💬', 'Чат не настроен', ''); return; }
+  if (tg && tg.openLink) tg.openLink(_chatUsersLink);
+  else window.open(_chatUsersLink, '_blank');
+}
+
+function openTransactionHistory() {
+  const m = document.getElementById('txModal');
+  if (m) m.style.display = 'flex';
+  wsSend({ action: 'get_transactions' });
+}
+
+function closeTxModal() {
+  const m = document.getElementById('txModal');
+  if (m) m.style.display = 'none';
+}
+
+function renderTransactions(txs) {
+  const list = document.getElementById('txList');
+  if (!list) return;
+  if (!txs || !txs.length) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">История пуста</div>';
+    return;
+  }
+  const GAME_ICONS = { slots: '🎰', dice: '🎲', coinflip: '🪙', plinko: '🔵', mines: '💣', crash: '🚀', wheel: '🎡' };
+  const GAME_NAMES = { slots: 'Слоты', dice: 'Дайс', coinflip: 'Флип Коин', plinko: 'Плинко', mines: 'Минки', crash: 'Краш', wheel: 'Колесо' };
+  list.innerHTML = txs.map(tx => {
+    let icon, title, amtStr, color;
+    if (tx.type === 'game') {
+      icon = GAME_ICONS[tx.label] || '🎮';
+      title = GAME_NAMES[tx.label] || tx.label;
+      const profit = (tx.payout || 0) - (tx.amount || 0);
+      amtStr = (profit >= 0 ? '+' : '') + Math.round(profit) + '₽';
+      color = profit >= 0 ? 'var(--green)' : 'var(--red)';
+    } else if (tx.type === 'deposit') {
+      icon = '💎';
+      title = 'Пополнение';
+      amtStr = '+' + Math.round(tx.amount || 0) + '₽';
+      color = 'var(--green)';
+    } else {
+      icon = '💸';
+      title = 'Вывод';
+      amtStr = '-' + Math.round(tx.amount || 0) + '₽';
+      color = 'var(--red)';
+    }
+    const date = tx.created_at ? tx.created_at.slice(0, 16).replace('T', ' ') : '';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border)">
+      <div style="width:38px;height:38px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${icon}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700">${title}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">${date}</div>
+      </div>
+      <div style="font-size:16px;font-weight:900;color:${color};flex-shrink:0">${amtStr}</div>
+    </div>`;
+  }).join('');
 }
 
 // ══════════════════════════════════
