@@ -382,6 +382,101 @@
   }
   .preset-btn:active { background: var(--purple); border-color: var(--purple); }
 
+  /* ── DAILY BONUS ROULETTE ── */
+  .bonus-card {
+    margin: 0 16px 16px;
+    background: linear-gradient(135deg, #1a0a3a 0%, #0a1a3a 50%, #0a2a1a 100%);
+    border: 1px solid rgba(255,215,0,0.25);
+    border-radius: 18px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bonus-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(255,215,0,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .bonus-spin-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000;
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .bonus-spin-btn:active { transform: scale(0.97); }
+  .bonus-spin-btn:disabled { opacity: 0.5; cursor: default; }
+  #dailyBonusModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+  }
+  .bonus-modal-inner {
+    background: var(--card);
+    border-radius: 26px;
+    padding: 24px 20px;
+    width: min(360px, 94vw);
+    text-align: center;
+    border: 1px solid rgba(255,215,0,0.2);
+    box-shadow: 0 0 60px rgba(255,215,0,0.15);
+    position: relative;
+  }
+  .bonus-wheel-wrap {
+    position: relative;
+    width: 270px;
+    height: 270px;
+    margin: 0 auto 16px;
+  }
+  .bonus-wheel-pointer {
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 28px;
+    z-index: 10;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8));
+    animation: pointerPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pointerPulse {
+    0%,100% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.15); }
+  }
+  .bonus-prizes-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  .bonus-prize-chip {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+  }
+  .bonus-prize-chip.rare { border-color: var(--gold); background: rgba(255,215,0,0.1); color: var(--gold); }
+  @keyframes bonusWinPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+  .bonus-win-anim { animation: bonusWinPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+
   /* ── SPIN BUTTON ── */
   .spin-btn {
     width: 100%;
@@ -1689,6 +1784,19 @@
     </div>
   </div>
 
+  <!-- Daily Bonus Card -->
+  <div class="bonus-card" onclick="openDailyBonusModal()" style="cursor:pointer">
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="font-size:40px;line-height:1;flex-shrink:0">🎰</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:11px;color:rgba(255,215,0,0.7);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px">Ежедневный бонус</div>
+        <div style="font-size:16px;font-weight:800;margin-bottom:4px">Крути рулетку!</div>
+        <div id="dailyBonusStatus" style="font-size:12px;color:rgba(255,255,255,0.5)">Загрузка...</div>
+      </div>
+      <div id="dailyBonusArrow" style="font-size:24px;color:rgba(255,215,0,0.6)">›</div>
+    </div>
+  </div>
+
   <!-- Tasks section -->
   <div style="padding:0 16px 8px">
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;padding:0 2px">📋 Задания</div>
@@ -1713,14 +1821,6 @@
       oninput="this.value=this.value.toUpperCase()">
     <button onclick="activatePromo()" style="width:100%;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:14px;font-weight:900;cursor:pointer">Активировать</button>
     <div id="promoStatus" style="font-size:12px;margin-top:8px;display:none"></div>
-  </div>
-
-  <!-- Кнопка перейти к играм -->
-  <div style="padding:0 16px 16px">
-    <button onclick="showTab('games-screen', document.querySelectorAll('.nav-item')[1])"
-      style="width:100%;padding:16px;border-radius:16px;border:none;background:linear-gradient(135deg,#7c3aff,#3a8fff);color:#fff;font-size:16px;font-weight:900;cursor:pointer;letter-spacing:0.5px;box-shadow:0 4px 20px rgba(124,58,255,0.35);transition:all 0.2s">
-      🎮 Перейти к играм
-    </button>
   </div>
 
   <div style="height:80px"></div>
@@ -1829,8 +1929,9 @@
         <div class="preset-btn" onclick="setBet('slotsBet',25)">25</div>
         <div class="preset-btn" onclick="setBet('slotsBet',50)">50</div>
         <div class="preset-btn" onclick="setBet('slotsBet',100)">100</div>
-        <div class="preset-btn" onclick="halfBet('slotsBet')">½</div>
+        <div class="preset-btn" onclick="halfBet('slotsBet')">÷2</div>
         <div class="preset-btn" onclick="doubleBet('slotsBet')">×2</div>
+        <div class="preset-btn" onclick="maxBet('slotsBet')" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border-color:var(--gold);font-weight:900">MAX</div>
       </div>
     </div>
     <button class="spin-btn" id="slotsBtn" onclick="playSlotsGame()">🎰 КРУТИТЬ!</button>
@@ -1888,8 +1989,9 @@
         <div class="preset-btn" onclick="setBet('diceBet',25)">25</div>
         <div class="preset-btn" onclick="setBet('diceBet',50)">50</div>
         <div class="preset-btn" onclick="setBet('diceBet',100)">100</div>
-        <div class="preset-btn" onclick="halfBet('diceBet')">½</div>
+        <div class="preset-btn" onclick="halfBet('diceBet')">÷2</div>
         <div class="preset-btn" onclick="doubleBet('diceBet')">×2</div>
+        <div class="preset-btn" onclick="maxBet('diceBet')" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border-color:var(--gold);font-weight:900">MAX</div>
       </div>
       <button class="spin-btn" id="diceBtn" onclick="playDiceGame()" style="margin-top:14px">🎲 БРОСИТЬ!</button>
     </div>
@@ -1944,8 +2046,9 @@
         <div class="preset-btn" onclick="setBet('coinBet',25)">25</div>
         <div class="preset-btn" onclick="setBet('coinBet',50)">50</div>
         <div class="preset-btn" onclick="setBet('coinBet',100)">100</div>
-        <div class="preset-btn" onclick="halfBet('coinBet')">½</div>
+        <div class="preset-btn" onclick="halfBet('coinBet')">÷2</div>
         <div class="preset-btn" onclick="doubleBet('coinBet')">×2</div>
+        <div class="preset-btn" onclick="maxBet('coinBet')" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border-color:var(--gold);font-weight:900">MAX</div>
       </div>
     </div>
 
@@ -1996,8 +2099,9 @@
       <div class="preset-btn" onclick="setBet('plinkoBet',25)">25</div>
       <div class="preset-btn" onclick="setBet('plinkoBet',50)">50</div>
       <div class="preset-btn" onclick="setBet('plinkoBet',100)">100</div>
-      <div class="preset-btn" onclick="halfBet('plinkoBet')">½</div>
+      <div class="preset-btn" onclick="halfBet('plinkoBet')">÷2</div>
       <div class="preset-btn" onclick="doubleBet('plinkoBet')">×2</div>
+      <div class="preset-btn" onclick="maxBet('plinkoBet')" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border-color:var(--gold);font-weight:900">MAX</div>
     </div>
 
     <!-- Поле плинко -->
@@ -2028,8 +2132,9 @@
         </div>
         <div style="display:flex;gap:4px">
           <div class="preset-btn" onclick="setBet('minesBet',10)" style="padding:8px 10px">10</div>
-          <div class="preset-btn" onclick="setBet('minesBet',50)" style="padding:8px 10px">50</div>
-          <div class="preset-btn" onclick="setBet('minesBet',Math.floor(state.balance))" style="padding:8px 10px">MAX</div>
+          <div class="preset-btn" onclick="halfBet('minesBet')" style="padding:8px 10px">÷2</div>
+          <div class="preset-btn" onclick="doubleBet('minesBet')" style="padding:8px 10px">×2</div>
+          <div class="preset-btn" onclick="maxBet('minesBet')" style="padding:8px 10px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border-color:var(--gold);font-weight:900">MAX</div>
         </div>
       </div>
       <!-- Ползунок мин -->
@@ -2106,8 +2211,9 @@
         <div class="preset-btn" onclick="setBet('crashBet',25)">25</div>
         <div class="preset-btn" onclick="setBet('crashBet',50)">50</div>
         <div class="preset-btn" onclick="setBet('crashBet',100)">100</div>
-        <div class="preset-btn" onclick="halfBet('crashBet')">½</div>
+        <div class="preset-btn" onclick="halfBet('crashBet')">÷2</div>
         <div class="preset-btn" onclick="doubleBet('crashBet')">×2</div>
+        <div class="preset-btn" onclick="maxBet('crashBet')" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border-color:var(--gold);font-weight:900">MAX</div>
       </div>
     </div>
 
@@ -2340,6 +2446,11 @@
         <div style="flex:1;font-size:15px;font-weight:600">Тема оформления</div>
         <div style="color:var(--muted);font-size:20px">›</div>
       </div>
+      <div onclick="toggleSound()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
+        <div style="width:34px;height:34px;border-radius:9px;background:rgba(124,58,255,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0" id="soundToggleIcon">🔊</div>
+        <div style="flex:1;font-size:15px;font-weight:600">Звуки игры</div>
+        <div id="soundToggleBadge" style="font-size:12px;font-weight:800;padding:4px 12px;border-radius:20px;background:var(--green);color:#000;flex-shrink:0">Вкл</div>
+      </div>
       <div onclick="openTransactionHistory()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
         <div style="width:34px;height:34px;border-radius:9px;background:rgba(99,102,241,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📋</div>
         <div style="flex:1;font-size:15px;font-weight:600">История транзакций</div>
@@ -2515,6 +2626,34 @@
       <div style="color:var(--muted);font-size:20px">›</div>
     </div>
     <button onclick="closeContactsModal()" style="width:100%;padding:12px;border-radius:12px;border:none;background:rgba(255,255,255,0.06);color:var(--muted);font-size:14px;cursor:pointer">Закрыть</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     DAILY BONUS MODAL
+══════════════════════════════════ -->
+<div id="dailyBonusModal" onclick="if(event.target===this && !bonusSpinning)closeDailyBonusModal()">
+  <div class="bonus-modal-inner">
+    <div style="font-size:20px;font-weight:900;margin-bottom:4px">🎰 Ежедневная рулетка</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Раз в 24 часа — бесплатный приз!</div>
+    <div class="bonus-wheel-wrap">
+      <div class="bonus-wheel-pointer">▼</div>
+      <canvas id="bonusWheelCanvas" width="270" height="270"></canvas>
+    </div>
+    <div class="bonus-prizes-list">
+      <div class="bonus-prize-chip">1₽ — часто</div>
+      <div class="bonus-prize-chip">2₽ — часто</div>
+      <div class="bonus-prize-chip">3₽</div>
+      <div class="bonus-prize-chip">5₽</div>
+      <div class="bonus-prize-chip rare">7₽ — редко</div>
+      <div class="bonus-prize-chip rare">13₽ — редко</div>
+      <div class="bonus-prize-chip rare">50₽ — редко</div>
+      <div class="bonus-prize-chip rare">100₽ — удача!</div>
+      <div class="bonus-prize-chip rare">150₽ — джекпот!</div>
+    </div>
+    <div id="bonusResultBlock" style="min-height:44px;margin-bottom:12px;display:flex;align-items:center;justify-content:center"></div>
+    <button id="bonusSpinBtn" class="bonus-spin-btn" onclick="spinBonusWheel()">КРУТИТЬ!</button>
+    <div id="bonusTimerBlock" style="font-size:12px;color:var(--muted);margin-top:10px;min-height:18px"></div>
   </div>
 </div>
 
@@ -3259,6 +3398,7 @@ setInterval(() => { if (wsReady) wsSend({ action: 'get_balance' }); }, 30000);
 // ══════════════════════════════════
 // SOUND SYSTEM (Web Audio API)
 // ══════════════════════════════════
+let soundEnabled = localStorage.getItem('soundEnabled') !== '0';
 let audioCtx = null;
 
 function getAudio() {
@@ -3286,6 +3426,7 @@ function playTone(freq, type, duration, volume, startTime) {
 }
 
 function playSound(name) {
+  if (!soundEnabled) return;
   switch(name) {
     case 'bet':
       playTone(300, 'sine', 0.1, 0.08);
@@ -3357,7 +3498,43 @@ function playSound(name) {
       playTone(400, 'sine', 0.1, 0.12);
       playTone(300, 'sine', 0.15, 0.1, 0.08);
       break;
+    case 'daily_spin':
+      for(let i=0;i<12;i++) setTimeout(()=>playTone(200+i*40,'triangle',0.05,0.07), i*80);
+      break;
+    case 'daily_win_common':
+      playTone(523, 'sine', 0.1, 0.12);
+      playTone(659, 'sine', 0.1, 0.15, 0.1);
+      playTone(784, 'sine', 0.2, 0.18, 0.2);
+      break;
+    case 'daily_win_rare':
+      playTone(523, 'sine', 0.07, 0.15);
+      playTone(659, 'sine', 0.07, 0.17, 0.07);
+      playTone(784, 'sine', 0.07, 0.18, 0.14);
+      playTone(1047,'sine', 0.07, 0.2,  0.21);
+      playTone(1319,'sine', 0.15, 0.25, 0.28);
+      playTone(1568,'sine', 0.3,  0.3,  0.4);
+      break;
+    case 'slot_reel':
+      playTone(180 + Math.random()*80, 'square', 0.03, 0.04);
+      break;
+    case 'slot_stop':
+      playTone(350, 'sine', 0.06, 0.1);
+      playTone(280, 'sine', 0.08, 0.08, 0.05);
+      break;
+    case 'toggle':
+      playTone(600, 'sine', 0.04, 0.08);
+      break;
   }
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  localStorage.setItem('soundEnabled', soundEnabled ? '1' : '0');
+  const icon = document.getElementById('soundToggleIcon');
+  const badge = document.getElementById('soundToggleBadge');
+  if (icon) icon.textContent = soundEnabled ? '🔊' : '🔇';
+  if (badge) { badge.textContent = soundEnabled ? 'Вкл' : 'Выкл'; badge.style.background = soundEnabled ? 'var(--green)' : 'var(--red)'; }
+  if (soundEnabled) playSound('toggle');
 }
 
 // Инициализировать аудио при первом касании
@@ -3440,6 +3617,7 @@ function updateGameBalance(game) {
 function setBet(id, val) { document.getElementById(id).value = val; }
 function halfBet(id) { const el = document.getElementById(id); el.value = Math.max(1, Math.floor(el.value / 2)); }
 function doubleBet(id) { const el = document.getElementById(id); el.value = Math.min(state.balance, el.value * 2); }
+function maxBet(id) { const el = document.getElementById(id); el.value = Math.max(1, Math.floor(state.balance)); }
 function getBet(id) { return Math.max(1, parseFloat(document.getElementById(id).value) || 10); }
 
 function canBet(amount) {
@@ -5328,6 +5506,14 @@ try {
   setTheme(saved);
 } catch(e) { setTheme('blue'); }
 
+// Init sound toggle UI state
+(function() {
+  const icon = document.getElementById('soundToggleIcon');
+  const badge = document.getElementById('soundToggleBadge');
+  if (icon) icon.textContent = soundEnabled ? '🔊' : '🔇';
+  if (badge) { badge.textContent = soundEnabled ? 'Вкл' : 'Выкл'; badge.style.background = soundEnabled ? 'var(--green)' : 'var(--red)'; }
+})();
+
 console.log('🎡 Wheels WebApp ready!');
 
 // ══════════════════════════════════
@@ -5511,6 +5697,255 @@ const _DOCS = {
     `
   }
 };
+
+// ══════════════════════════════════
+// DAILY BONUS ROULETTE
+// ══════════════════════════════════
+const BONUS_PRIZES = [
+  { label: '1₽',   value: 1,   weight: 49.5, bg: '#1a1430', text: '#9988cc' },
+  { label: '2₽',   value: 2,   weight: 29.5, bg: '#0e1e3a', text: '#5599ff' },
+  { label: '3₽',   value: 3,   weight: 14,   bg: '#0a2a1c', text: '#33cc77' },
+  { label: '5₽',   value: 5,   weight: 5,    bg: '#1e2a08', text: '#aacc00' },
+  { label: '7₽',   value: 7,   weight: 0.8,  bg: '#2a1a06', text: '#ffaa33' },
+  { label: '13₽',  value: 13,  weight: 0.5,  bg: '#2a0a1a', text: '#ff5599' },
+  { label: '50₽',  value: 50,  weight: 0.35, bg: '#2a1e00', text: '#ffd700' },
+  { label: '100₽', value: 100, weight: 0.2,  bg: '#2a0e00', text: '#ff8800' },
+  { label: '150₽', value: 150, weight: 0.05, bg: '#200020', text: '#ff44ff' },
+];
+const BONUS_TOTAL_W = BONUS_PRIZES.reduce((s,p)=>s+p.weight,0);
+
+let bonusAngle = 0;
+let bonusSpinning = false;
+let bonusAnimId = null;
+let bonusWheelReady = false;
+
+function pickBonusPrize() {
+  let r = Math.random() * BONUS_TOTAL_W;
+  for (let i = 0; i < BONUS_PRIZES.length; i++) {
+    r -= BONUS_PRIZES[i].weight;
+    if (r <= 0) return i;
+  }
+  return 0;
+}
+
+function canSpinBonus() {
+  const last = parseInt(localStorage.getItem('lastDailyBonus') || '0', 10);
+  return (Date.now() - last) >= 24 * 60 * 60 * 1000;
+}
+
+function getNextBonusMs() {
+  const last = parseInt(localStorage.getItem('lastDailyBonus') || '0', 10);
+  return Math.max(0, last + 24 * 60 * 60 * 1000 - Date.now());
+}
+
+function formatCountdown(ms) {
+  if (ms <= 0) return 'Доступно!';
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return `Следующий через ${h}ч ${m}м ${s}с`;
+}
+
+let _bonusTimerInterval = null;
+function updateDailyBonusStatus() {
+  const statusEl = document.getElementById('dailyBonusStatus');
+  const timerEl = document.getElementById('bonusTimerBlock');
+  const spinBtn = document.getElementById('bonusSpinBtn');
+
+  if (canSpinBonus()) {
+    if (statusEl) { statusEl.textContent = 'Доступна бесплатная прокрутка!'; statusEl.style.color = 'rgba(100,255,150,0.9)'; }
+    if (timerEl) timerEl.textContent = '';
+    if (spinBtn) { spinBtn.disabled = false; spinBtn.textContent = 'КРУТИТЬ!'; }
+    if (_bonusTimerInterval) { clearInterval(_bonusTimerInterval); _bonusTimerInterval = null; }
+  } else {
+    const ms = getNextBonusMs();
+    const txt = formatCountdown(ms);
+    if (statusEl) { statusEl.textContent = txt; statusEl.style.color = 'rgba(255,255,255,0.45)'; }
+    if (timerEl) timerEl.textContent = txt;
+    if (spinBtn) { spinBtn.disabled = true; spinBtn.textContent = 'Уже крутил сегодня'; }
+    if (!_bonusTimerInterval) {
+      _bonusTimerInterval = setInterval(updateDailyBonusStatus, 1000);
+    }
+  }
+}
+
+function drawBonusWheel() {
+  const canvas = document.getElementById('bonusWheelCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const R = cx - 6;
+  const n = BONUS_PRIZES.length;
+  const segAngle = (Math.PI * 2) / n;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // outer glow ring
+  const grd = ctx.createRadialGradient(cx, cy, R-4, cx, cy, R+4);
+  grd.addColorStop(0, 'rgba(255,215,0,0.5)');
+  grd.addColorStop(1, 'rgba(255,215,0,0)');
+  ctx.beginPath();
+  ctx.arc(cx, cy, R+2, 0, Math.PI*2);
+  ctx.strokeStyle = grd;
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
+  for (let i = 0; i < n; i++) {
+    const startA = bonusAngle + i * segAngle - Math.PI/2;
+    const endA = startA + segAngle;
+    const p = BONUS_PRIZES[i];
+
+    // segment fill
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R, startA, endA);
+    ctx.closePath();
+    ctx.fillStyle = p.bg;
+    ctx.fill();
+
+    // segment border
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // label
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(startA + segAngle / 2);
+    ctx.textAlign = 'right';
+    ctx.font = `bold ${p.value >= 100 ? '13' : p.value >= 10 ? '15' : '17'}px system-ui`;
+    ctx.fillStyle = p.text;
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 4;
+    ctx.fillText(p.label, R - 10, 5);
+    ctx.restore();
+  }
+
+  // center circle
+  ctx.beginPath();
+  ctx.arc(cx, cy, 24, 0, Math.PI*2);
+  const cg = ctx.createRadialGradient(cx-4, cy-4, 2, cx, cy, 24);
+  cg.addColorStop(0, '#ffd700');
+  cg.addColorStop(1, '#c07000');
+  ctx.fillStyle = cg;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // center icon
+  ctx.font = '18px system-ui';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#000';
+  ctx.fillText('🎡', cx, cy);
+}
+
+function openDailyBonusModal() {
+  const modal = document.getElementById('dailyBonusModal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  updateDailyBonusStatus();
+  if (!bonusWheelReady) { bonusWheelReady = true; }
+  requestAnimationFrame(drawBonusWheel);
+}
+
+function closeDailyBonusModal() {
+  const modal = document.getElementById('dailyBonusModal');
+  if (modal) modal.style.display = 'none';
+}
+
+function spinBonusWheel() {
+  if (bonusSpinning) return;
+  if (!canSpinBonus()) return;
+
+  const prizeIdx = pickBonusPrize();
+  const n = BONUS_PRIZES.length;
+  const segAngle = (Math.PI * 2) / n;
+
+  // We need the winning segment's center to end up under the pointer (top, 12 o'clock).
+  // Drawing: segment i center is at (bonusAngle + i*segAngle + segAngle/2 - PI/2) in canvas angle.
+  // Pointer is at -PI/2 (12 o'clock). So we need: bonusAngle + prizeIdx*segAngle + segAngle/2 ≡ 0 (mod 2PI)
+  // => final bonusAngle mod 2PI = 2PI - (prizeIdx*segAngle + segAngle/2)
+  const targetSegCenter = prizeIdx * segAngle + segAngle / 2;
+  const desiredMod = ((Math.PI * 2) - targetSegCenter + Math.PI * 2) % (Math.PI * 2);
+  const extraSpins = 7;
+  const adj = (desiredMod - bonusAngle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+  const targetAngle = bonusAngle + (Math.PI * 2) * extraSpins + adj;
+
+  bonusSpinning = true;
+  const spinBtn = document.getElementById('bonusSpinBtn');
+  if (spinBtn) { spinBtn.disabled = true; spinBtn.textContent = '...'; }
+
+  const startAngle = bonusAngle;
+  const totalRot = targetAngle - startAngle;
+  const duration = 4500;
+  const startTime = performance.now();
+
+  playSound('daily_spin');
+
+  function easeOut(t) { return 1 - Math.pow(1-t, 4); }
+
+  let lastTickSound = 0;
+  const TICK_INTERVAL = 0.18; // fraction of duration
+
+  function animate(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    bonusAngle = startAngle + totalRot * easeOut(t);
+    drawBonusWheel();
+
+    // tick sounds during spin
+    const tickT = elapsed / duration;
+    if (tickT - lastTickSound > TICK_INTERVAL * (0.3 + t * 0.7)) {
+      playTone(300 + Math.random()*100, 'sine', 0.04, 0.06);
+      lastTickSound = tickT;
+    }
+
+    if (t < 1) {
+      bonusAnimId = requestAnimationFrame(animate);
+    } else {
+      bonusSpinning = false;
+      onBonusSpinEnd(prizeIdx);
+    }
+  }
+
+  bonusAnimId = requestAnimationFrame(animate);
+}
+
+function onBonusSpinEnd(prizeIdx) {
+  const prize = BONUS_PRIZES[prizeIdx];
+  localStorage.setItem('lastDailyBonus', String(Date.now()));
+
+  // Give balance
+  state.balance += prize.value;
+  updateBalanceDisplay();
+
+  // Sound
+  const isRare = prize.value >= 7;
+  playSound(isRare ? 'daily_win_rare' : 'daily_win_common');
+  if (tg) tg.HapticFeedback?.notificationOccurred('success');
+
+  // Show result
+  const resultEl = document.getElementById('bonusResultBlock');
+  if (resultEl) {
+    resultEl.innerHTML = `<div class="bonus-win-anim" style="font-size:${isRare?'30':'26'}px;font-weight:900;color:${isRare?'var(--gold)':'var(--text)'}">+${prize.label} ${isRare ? '🎉' : ''}</div>`;
+  }
+
+  // Update button & timer
+  updateDailyBonusStatus();
+
+  // Notify server
+  wsSend({ action: 'daily_bonus', amount: prize.value, prize_label: prize.label });
+
+  // Update home card
+  updateDailyBonusStatus();
+}
+
+// Init daily bonus status on load
+document.addEventListener('DOMContentLoaded', updateDailyBonusStatus);
+setTimeout(updateDailyBonusStatus, 500);
 
 function openDocModal(type) {
   const doc = _DOCS[type];
