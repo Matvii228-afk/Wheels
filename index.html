@@ -434,42 +434,105 @@
     box-shadow: 0 0 60px rgba(255,215,0,0.15);
     position: relative;
   }
-  .bonus-wheel-wrap {
+  /* ── STRIP ROULETTE ── */
+  .bonus-strip-wrap {
     position: relative;
-    width: 270px;
-    height: 270px;
-    margin: 0 auto 16px;
+    width: 100%;
+    height: 92px;
+    margin: 0 0 18px;
   }
-  .bonus-wheel-pointer {
+  .bonus-strip-mask {
+    width: 100%;
+    height: 92px;
+    overflow: hidden;
+    position: relative;
+    border-radius: 14px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.07);
+  }
+  .bonus-strip-mask::before, .bonus-strip-mask::after {
+    content: '';
     position: absolute;
-    top: -8px;
+    top: 0; bottom: 0;
+    width: 72px;
+    z-index: 6;
+    pointer-events: none;
+  }
+  .bonus-strip-mask::before { left:0; background: linear-gradient(90deg, var(--card) 10%, transparent 100%); }
+  .bonus-strip-mask::after  { right:0; background: linear-gradient(-90deg, var(--card) 10%, transparent 100%); }
+  .bonus-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: absolute;
+    left: 0; top: 0;
+    height: 92px;
+    padding: 0 8px;
+    will-change: transform;
+  }
+  .bonus-strip-item {
+    width: 78px;
+    height: 74px;
+    border-radius: 11px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-weight: 900;
+    font-size: 19px;
+    color: #fff;
+    text-shadow: 0 1px 5px rgba(0,0,0,0.6);
+    border: 2px solid rgba(255,255,255,0.12);
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  }
+  .bonus-strip-item::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 38%;
+    background: rgba(255,255,255,0.13);
+    border-radius: 9px 9px 0 0;
+    pointer-events: none;
+  }
+  .bonus-strip-item.bonus-strip-winner {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 18px rgba(255,215,0,0.55);
+    transform: scale(1.07);
+    z-index: 2;
+  }
+  .bonus-strip-pointer {
+    position: absolute;
+    top: 5px; bottom: 5px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 28px;
+    width: 3px;
+    background: linear-gradient(180deg, rgba(255,215,0,0), #ffd700 15%, #ffd700 85%, rgba(255,215,0,0));
     z-index: 10;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8));
-    animation: pointerPulse 1.5s ease-in-out infinite;
+    border-radius: 3px;
+    box-shadow: 0 0 10px #ffd700, 0 0 22px rgba(255,215,0,0.4);
   }
-  @keyframes pointerPulse {
-    0%,100% { transform: translateX(-50%) scale(1); }
-    50% { transform: translateX(-50%) scale(1.15); }
+  .bonus-strip-pointer::before, .bonus-strip-pointer::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
   }
-  .bonus-prizes-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    justify-content: center;
-    margin-bottom: 16px;
+  .bonus-strip-pointer::before {
+    top: -7px;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 9px solid #ffd700;
   }
-  .bonus-prize-chip {
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 700;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05);
+  .bonus-strip-pointer::after {
+    bottom: -7px;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-bottom: 9px solid #ffd700;
   }
-  .bonus-prize-chip.rare { border-color: var(--gold); background: rgba(255,215,0,0.1); color: var(--gold); }
   @keyframes bonusWinPop {
     0% { transform: scale(0.5); opacity: 0; }
     60% { transform: scale(1.2); opacity: 1; }
@@ -2633,23 +2696,15 @@
      DAILY BONUS MODAL
 ══════════════════════════════════ -->
 <div id="dailyBonusModal" onclick="if(event.target===this && !bonusSpinning)closeDailyBonusModal()">
-  <div class="bonus-modal-inner">
+  <div class="bonus-modal-inner" style="position:relative">
+    <button onclick="if(!bonusSpinning)closeDailyBonusModal()" style="position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,0.08);color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0">×</button>
     <div style="font-size:20px;font-weight:900;margin-bottom:4px">🎰 Ежедневная рулетка</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">Раз в 24 часа — бесплатный приз!</div>
-    <div class="bonus-wheel-wrap">
-      <div class="bonus-wheel-pointer">▼</div>
-      <canvas id="bonusWheelCanvas" width="270" height="270"></canvas>
-    </div>
-    <div class="bonus-prizes-list">
-      <div class="bonus-prize-chip">1₽ — часто</div>
-      <div class="bonus-prize-chip">2₽ — часто</div>
-      <div class="bonus-prize-chip">3₽</div>
-      <div class="bonus-prize-chip">5₽</div>
-      <div class="bonus-prize-chip rare">7₽ — редко</div>
-      <div class="bonus-prize-chip rare">13₽ — редко</div>
-      <div class="bonus-prize-chip rare">50₽ — редко</div>
-      <div class="bonus-prize-chip rare">100₽ — удача!</div>
-      <div class="bonus-prize-chip rare">150₽ — джекпот!</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:18px">Раз в 24 часа — бесплатный приз!</div>
+    <div class="bonus-strip-wrap">
+      <div class="bonus-strip-pointer"></div>
+      <div class="bonus-strip-mask">
+        <div class="bonus-strip" id="bonusStrip"></div>
+      </div>
     </div>
     <div id="bonusResultBlock" style="min-height:44px;margin-bottom:12px;display:flex;align-items:center;justify-content:center"></div>
     <button id="bonusSpinBtn" class="bonus-spin-btn" onclick="spinBonusWheel()">КРУТИТЬ!</button>
@@ -3078,6 +3133,18 @@ function handleWSMessage(data) {
   if (type === 'balance') {
     state.balance = data.balance;
     updateBalanceDisplay();
+  }
+
+  if (type === 'daily_bonus_ok') {
+    // Server persisted the bonus; trust server balance
+    if (data.balance !== undefined) { state.balance = data.balance; updateBalanceDisplay(); }
+  }
+
+  if (type === 'daily_bonus_error') {
+    // Server rejected (duplicate spin within 24h on server side) — roll back local credit
+    if (data.balance !== undefined) { state.balance = data.balance; updateBalanceDisplay(); }
+    const resultEl = document.getElementById('bonusResultBlock');
+    if (resultEl) resultEl.innerHTML = `<div style="color:var(--red);font-size:13px">${data.message || 'Уже получен сегодня'}</div>`;
   }
 
   if (type === 'bet_placed') {
@@ -5699,25 +5766,27 @@ const _DOCS = {
 };
 
 // ══════════════════════════════════
-// DAILY BONUS ROULETTE
+// DAILY BONUS ROULETTE (STRIP)
 // ══════════════════════════════════
 const BONUS_PRIZES = [
-  { label: '1₽',   value: 1,   weight: 49.5, bg: '#1a1430', text: '#9988cc' },
-  { label: '2₽',   value: 2,   weight: 29.5, bg: '#0e1e3a', text: '#5599ff' },
-  { label: '3₽',   value: 3,   weight: 14,   bg: '#0a2a1c', text: '#33cc77' },
-  { label: '5₽',   value: 5,   weight: 5,    bg: '#1e2a08', text: '#aacc00' },
-  { label: '7₽',   value: 7,   weight: 0.8,  bg: '#2a1a06', text: '#ffaa33' },
-  { label: '13₽',  value: 13,  weight: 0.5,  bg: '#2a0a1a', text: '#ff5599' },
-  { label: '50₽',  value: 50,  weight: 0.35, bg: '#2a1e00', text: '#ffd700' },
-  { label: '100₽', value: 100, weight: 0.2,  bg: '#2a0e00', text: '#ff8800' },
-  { label: '150₽', value: 150, weight: 0.05, bg: '#200020', text: '#ff44ff' },
+  { label: '1₽',   value: 1,   weight: 49.5, bg: '#2a1e50', color: '#b8aaee' },
+  { label: '2₽',   value: 2,   weight: 29.5, bg: '#0e2050', color: '#66aaff' },
+  { label: '3₽',   value: 3,   weight: 14,   bg: '#0b2e1a', color: '#44dd88' },
+  { label: '5₽',   value: 5,   weight: 5,    bg: '#1e2e06', color: '#bbdd00' },
+  { label: '7₽',   value: 7,   weight: 0.8,  bg: '#2e1e06', color: '#ffbb44' },
+  { label: '13₽',  value: 13,  weight: 0.5,  bg: '#320e20', color: '#ff66aa' },
+  { label: '50₽',  value: 50,  weight: 0.35, bg: '#2e2200', color: '#ffd700' },
+  { label: '100₽', value: 100, weight: 0.2,  bg: '#300e00', color: '#ff9900' },
+  { label: '150₽', value: 150, weight: 0.05, bg: '#260028', color: '#ff55ff' },
 ];
 const BONUS_TOTAL_W = BONUS_PRIZES.reduce((s,p)=>s+p.weight,0);
 
-let bonusAngle = 0;
+const STRIP_SLOT = 86;         // 78px item + 8px gap
+const STRIP_N_REPEATS = 12;
+
 let bonusSpinning = false;
-let bonusAnimId = null;
-let bonusWheelReady = false;
+let bonusStripTx = 0;
+let bonusStripItems = [];
 
 function pickBonusPrize() {
   let r = Math.random() * BONUS_TOTAL_W;
@@ -5749,106 +5818,55 @@ function formatCountdown(ms) {
 let _bonusTimerInterval = null;
 function updateDailyBonusStatus() {
   const statusEl = document.getElementById('dailyBonusStatus');
-  const timerEl = document.getElementById('bonusTimerBlock');
-  const spinBtn = document.getElementById('bonusSpinBtn');
+  const timerEl  = document.getElementById('bonusTimerBlock');
+  const spinBtn  = document.getElementById('bonusSpinBtn');
 
   if (canSpinBonus()) {
     if (statusEl) { statusEl.textContent = 'Доступна бесплатная прокрутка!'; statusEl.style.color = 'rgba(100,255,150,0.9)'; }
-    if (timerEl) timerEl.textContent = '';
-    if (spinBtn) { spinBtn.disabled = false; spinBtn.textContent = 'КРУТИТЬ!'; }
+    if (timerEl)  timerEl.textContent = '';
+    if (spinBtn)  { spinBtn.disabled = false; spinBtn.textContent = 'КРУТИТЬ!'; }
     if (_bonusTimerInterval) { clearInterval(_bonusTimerInterval); _bonusTimerInterval = null; }
   } else {
-    const ms = getNextBonusMs();
+    const ms  = getNextBonusMs();
     const txt = formatCountdown(ms);
     if (statusEl) { statusEl.textContent = txt; statusEl.style.color = 'rgba(255,255,255,0.45)'; }
-    if (timerEl) timerEl.textContent = txt;
-    if (spinBtn) { spinBtn.disabled = true; spinBtn.textContent = 'Уже крутил сегодня'; }
-    if (!_bonusTimerInterval) {
-      _bonusTimerInterval = setInterval(updateDailyBonusStatus, 1000);
-    }
+    if (timerEl)  timerEl.textContent = txt;
+    if (spinBtn)  { spinBtn.disabled = true; spinBtn.textContent = 'Уже крутил сегодня'; }
+    if (!_bonusTimerInterval) _bonusTimerInterval = setInterval(updateDailyBonusStatus, 1000);
   }
 }
 
-function drawBonusWheel() {
-  const canvas = document.getElementById('bonusWheelCanvas');
-  if (!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const cx = canvas.width / 2, cy = canvas.height / 2;
-  const R = cx - 6;
-  const n = BONUS_PRIZES.length;
-  const segAngle = (Math.PI * 2) / n;
+function buildBonusStrip() {
+  const strip = document.getElementById('bonusStrip');
+  if (!strip) return;
+  strip.innerHTML = '';
+  strip.style.transform = 'translateX(0px)';
+  bonusStripItems = [];
+  bonusStripTx = 0;
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // outer glow ring
-  const grd = ctx.createRadialGradient(cx, cy, R-4, cx, cy, R+4);
-  grd.addColorStop(0, 'rgba(255,215,0,0.5)');
-  grd.addColorStop(1, 'rgba(255,215,0,0)');
-  ctx.beginPath();
-  ctx.arc(cx, cy, R+2, 0, Math.PI*2);
-  ctx.strokeStyle = grd;
-  ctx.lineWidth = 6;
-  ctx.stroke();
-
-  for (let i = 0; i < n; i++) {
-    const startA = bonusAngle + i * segAngle - Math.PI/2;
-    const endA = startA + segAngle;
-    const p = BONUS_PRIZES[i];
-
-    // segment fill
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, R, startA, endA);
-    ctx.closePath();
-    ctx.fillStyle = p.bg;
-    ctx.fill();
-
-    // segment border
-    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    // label
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(startA + segAngle / 2);
-    ctx.textAlign = 'right';
-    ctx.font = `bold ${p.value >= 100 ? '13' : p.value >= 10 ? '15' : '17'}px system-ui`;
-    ctx.fillStyle = p.text;
-    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-    ctx.shadowBlur = 4;
-    ctx.fillText(p.label, R - 10, 5);
-    ctx.restore();
+  for (let rep = 0; rep < STRIP_N_REPEATS; rep++) {
+    const order = BONUS_PRIZES.map((_,i)=>i).sort(()=>Math.random()-0.5);
+    for (const pi of order) {
+      bonusStripItems.push(pi);
+      const p = BONUS_PRIZES[pi];
+      const div = document.createElement('div');
+      div.className = 'bonus-strip-item';
+      div.style.background = p.bg;
+      div.style.color = p.color;
+      div.textContent = p.label;
+      strip.appendChild(div);
+    }
   }
-
-  // center circle
-  ctx.beginPath();
-  ctx.arc(cx, cy, 24, 0, Math.PI*2);
-  const cg = ctx.createRadialGradient(cx-4, cy-4, 2, cx, cy, 24);
-  cg.addColorStop(0, '#ffd700');
-  cg.addColorStop(1, '#c07000');
-  ctx.fillStyle = cg;
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // center icon
-  ctx.font = '18px system-ui';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = '#000';
-  ctx.fillText('🎡', cx, cy);
 }
 
 function openDailyBonusModal() {
   const modal = document.getElementById('dailyBonusModal');
   if (!modal) return;
   modal.style.display = 'flex';
+  const resultEl = document.getElementById('bonusResultBlock');
+  if (resultEl) resultEl.innerHTML = '';
+  buildBonusStrip();
   updateDailyBonusStatus();
-  if (!bonusWheelReady) { bonusWheelReady = true; }
-  requestAnimationFrame(drawBonusWheel);
 }
 
 function closeDailyBonusModal() {
@@ -5861,86 +5879,88 @@ function spinBonusWheel() {
   if (!canSpinBonus()) return;
 
   const prizeIdx = pickBonusPrize();
-  const n = BONUS_PRIZES.length;
-  const segAngle = (Math.PI * 2) / n;
 
-  // We need the winning segment's center to end up under the pointer (top, 12 o'clock).
-  // Drawing: segment i center is at (bonusAngle + i*segAngle + segAngle/2 - PI/2) in canvas angle.
-  // Pointer is at -PI/2 (12 o'clock). So we need: bonusAngle + prizeIdx*segAngle + segAngle/2 ≡ 0 (mod 2PI)
-  // => final bonusAngle mod 2PI = 2PI - (prizeIdx*segAngle + segAngle/2)
-  const targetSegCenter = prizeIdx * segAngle + segAngle / 2;
-  const desiredMod = ((Math.PI * 2) - targetSegCenter + Math.PI * 2) % (Math.PI * 2);
-  const extraSpins = 7;
-  const adj = (desiredMod - bonusAngle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-  const targetAngle = bonusAngle + (Math.PI * 2) * extraSpins + adj;
+  // Find a slot matching prizeIdx in the STRIP_N_REPEATS-3 repetition
+  const startRep = STRIP_N_REPEATS - 3;
+  let targetSlot = startRep * 9;
+  for (let i = startRep * 9; i < (startRep + 1) * 9; i++) {
+    if (bonusStripItems[i] === prizeIdx) { targetSlot = i; break; }
+  }
+
+  const maskEl   = document.querySelector('.bonus-strip-mask');
+  const maskWidth = maskEl ? maskEl.offsetWidth : 300;
+  const cx       = maskWidth / 2;
+  const itemCenter = targetSlot * STRIP_SLOT + 39;
+  const finalTx  = cx - itemCenter;
 
   bonusSpinning = true;
   const spinBtn = document.getElementById('bonusSpinBtn');
   if (spinBtn) { spinBtn.disabled = true; spinBtn.textContent = '...'; }
 
-  const startAngle = bonusAngle;
-  const totalRot = targetAngle - startAngle;
+  playSound('daily_spin');
+
+  const strip    = document.getElementById('bonusStrip');
+  const startTx  = bonusStripTx;
+  const totalMove = finalTx - startTx;
   const duration = 4500;
   const startTime = performance.now();
 
-  playSound('daily_spin');
-
   function easeOut(t) { return 1 - Math.pow(1-t, 4); }
 
-  let lastTickSound = 0;
-  const TICK_INTERVAL = 0.18; // fraction of duration
+  let lastTickIdx = -1;
 
   function animate(now) {
     const elapsed = now - startTime;
-    const t = Math.min(elapsed / duration, 1);
-    bonusAngle = startAngle + totalRot * easeOut(t);
-    drawBonusWheel();
+    const t       = Math.min(elapsed / duration, 1);
+    const curTx   = startTx + totalMove * easeOut(t);
+    bonusStripTx  = curTx;
+    if (strip) strip.style.transform = `translateX(${curTx}px)`;
 
-    // tick sounds during spin
-    const tickT = elapsed / duration;
-    if (tickT - lastTickSound > TICK_INTERVAL * (0.3 + t * 0.7)) {
-      playTone(300 + Math.random()*100, 'sine', 0.04, 0.06);
-      lastTickSound = tickT;
+    const curIdx = Math.round((cx - curTx - 39) / STRIP_SLOT);
+    if (curIdx !== lastTickIdx) {
+      lastTickIdx = curIdx;
+      playTone(260 + Math.random() * 80, 'sine', 0.035, 0.05);
     }
 
     if (t < 1) {
-      bonusAnimId = requestAnimationFrame(animate);
+      requestAnimationFrame(animate);
     } else {
       bonusSpinning = false;
-      onBonusSpinEnd(prizeIdx);
+      onBonusSpinEnd(prizeIdx, targetSlot);
     }
   }
 
-  bonusAnimId = requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 }
 
-function onBonusSpinEnd(prizeIdx) {
+function onBonusSpinEnd(prizeIdx, targetSlot) {
   const prize = BONUS_PRIZES[prizeIdx];
   localStorage.setItem('lastDailyBonus', String(Date.now()));
 
-  // Give balance
+  // Highlight winner cell
+  const strip = document.getElementById('bonusStrip');
+  if (strip) {
+    const cells = strip.querySelectorAll('.bonus-strip-item');
+    if (cells[targetSlot]) cells[targetSlot].classList.add('bonus-strip-winner');
+  }
+
+  // Credit balance locally; server will also persist it
   state.balance += prize.value;
   updateBalanceDisplay();
 
-  // Sound
   const isRare = prize.value >= 7;
   playSound(isRare ? 'daily_win_rare' : 'daily_win_common');
   if (tg) tg.HapticFeedback?.notificationOccurred('success');
 
-  // Show result
   const resultEl = document.getElementById('bonusResultBlock');
   if (resultEl) {
-    resultEl.innerHTML = `<div class="bonus-win-anim" style="font-size:${isRare?'30':'26'}px;font-weight:900;color:${isRare?'var(--gold)':'var(--text)'}">+${prize.label} ${isRare ? '🎉' : ''}</div>`;
+    resultEl.innerHTML = `<div class="bonus-win-anim" style="font-size:${isRare?'30':'26'}px;font-weight:900;color:${isRare?'var(--gold)':'var(--text)'}">+${prize.label}${isRare ? ' 🎉' : ''}</div>`;
   }
 
-  // Update button & timer
   updateDailyBonusStatus();
 
-  // Notify server
+  // Tell server to persist transaction
   wsSend({ action: 'daily_bonus', amount: prize.value, prize_label: prize.label });
-
-  // Update home card
-  updateDailyBonusStatus();
 }
 
 // Init daily bonus status on load
