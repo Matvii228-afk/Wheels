@@ -2800,10 +2800,9 @@ try {
 // Получить фото профиля из Telegram
 function getTgAvatar() {
   const user = tg?.initDataUnsafe?.user;
-  if (user?.photo_url) return `<img src="${user.photo_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
-  // Fallback: инициалы
+  if (user?.photo_url) return `<img src="${_esc(user.photo_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
   const name = user?.first_name || 'U';
-  return `<span style="font-size:13px;font-weight:700;color:#fff">${name[0].toUpperCase()}</span>`;
+  return `<span style="font-size:13px;font-weight:700;color:#fff">${_esc(name[0].toUpperCase())}</span>`;
 }
 
 // ══════════════════════════════════
@@ -2888,14 +2887,15 @@ let crashInited = false;
 let ws = null;
 let wsReady = false;
 const WS_URL = 'wss://wheelse.fit/ws';
+let _wsRetryDelay = 3000;
 
 function connectWS() {
   try {
     ws = new WebSocket(WS_URL);
 
-  ws.onopen = () => {
+    ws.onopen = () => {
       wsReady = true;
-      console.log('WS connected');
+      _wsRetryDelay = 3000; // reset backoff on success
       ws.send(JSON.stringify({
         action: 'identify',
         user_id: state.userId || 0,
@@ -2904,20 +2904,21 @@ function connectWS() {
         init_data: tg?.initData || '',
       }));
     };
-    
+
     ws.onmessage = (e) => {
       try { handleWSMessage(JSON.parse(e.data)); } catch(err) {}
     };
-    
+
     ws.onclose = () => {
       wsReady = false;
-      // Reconnect after 3s
-      setTimeout(connectWS, 3000);
+      setTimeout(connectWS, _wsRetryDelay);
+      _wsRetryDelay = Math.min(_wsRetryDelay * 1.5, 30000); // cap at 30s
     };
-    
+
     ws.onerror = () => { ws.close(); };
   } catch(e) {
-    setTimeout(connectWS, 3000);
+    setTimeout(connectWS, _wsRetryDelay);
+    _wsRetryDelay = Math.min(_wsRetryDelay * 1.5, 30000);
   }
 }
 
@@ -3144,7 +3145,7 @@ function handleWSMessage(data) {
     // Server rejected (duplicate spin within 24h on server side) — roll back local credit
     if (data.balance !== undefined) { state.balance = data.balance; updateBalanceDisplay(); }
     const resultEl = document.getElementById('bonusResultBlock');
-    if (resultEl) resultEl.innerHTML = `<div style="color:var(--red);font-size:13px">${data.message || 'Уже получен сегодня'}</div>`;
+    if (resultEl) resultEl.innerHTML = `<div style="color:var(--red);font-size:13px">${_esc(data.message || 'Уже получен сегодня')}</div>`;
   }
 
   if (type === 'bet_placed') {
@@ -3786,12 +3787,18 @@ function playSlotsGame() {
   }
 }
 
-function stopReelOnResult(ri, reel, onDone) {
+function stopReelOnResult(ri, reel, onDone, _waited) {
   if (slotsPending) {
     reel.innerHTML = `<div class="reel-symbol">${slotsPending.reels[ri]}</div>`;
     onDone();
+  } else if ((_waited || 0) > 8000) {
+    // Server timeout — reset and unblock
+    slotsSpinning = false;
+    const btn = document.getElementById('slotsBtn');
+    if (btn) btn.disabled = false;
+    showResult(false, '⚠️', 'Нет ответа от сервера', '');
   } else {
-    setTimeout(() => stopReelOnResult(ri, reel, onDone), 40);
+    setTimeout(() => stopReelOnResult(ri, reel, onDone, (_waited || 0) + 40), 40);
   }
 }
 
@@ -3951,7 +3958,7 @@ function playDiceGame() {
   }, 80);
 }
 
-function waitForDiceResult() {
+function waitForDiceResult(_waited) {
   if (dicePendingResult) {
     const data = dicePendingResult;
     dicePendingResult = null;
@@ -3967,8 +3974,13 @@ function waitForDiceResult() {
       const btn = document.getElementById('diceBtn');
       if (btn) btn.disabled = false;
     }, 200);
+  } else if ((_waited || 0) > 8000) {
+    diceRolling = false;
+    const btn = document.getElementById('diceBtn');
+    if (btn) btn.disabled = false;
+    showResult(false, '⚠️', 'Нет ответа от сервера', '');
   } else {
-    setTimeout(waitForDiceResult, 50);
+    setTimeout(() => waitForDiceResult((_waited || 0) + 50), 50);
   }
 }
 
@@ -4420,11 +4432,14 @@ function startMinesGame() {
 }
 
 function calcMinesMult() {
-  const safe = 25 - minesState.mineCount;
+  const safe = Math.max(1, 25 - minesState.mineCount);
   let mult = 1;
   for (let i = 0; i < minesState.revealed; i++) {
-    mult *= (safe - i) / (25 - i) * 1.02;
+    const denom = 25 - i;
+    if (denom <= 0) break;
+    mult *= (safe - i) / denom * 1.02;
   }
+  if (!mult || mult <= 0) return 1;
   return Math.max(1, 1 / mult * 0.95);
 }
 
@@ -5194,10 +5209,10 @@ function renderWheelAllBets() {
 
     list.innerHTML = entries.slice(-10).map(e =>
       `<div class="wplayer-card">
-        <div class="wplayer-avatar">${e.avatar}</div>
+        <div class="wplayer-avatar">${_esc(e.avatar)}</div>
         <div class="wplayer-info">
           <div class="wplayer-amount">₽ ${Math.round(e.amount)}</div>
-          <div class="wplayer-name">${e.name}</div>
+          <div class="wplayer-name">${_esc(e.name)}</div>
         </div>
       </div>`
     ).join('');
@@ -5297,8 +5312,8 @@ function loadRefData() {
         <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
           <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">👤</div>
           <div style="flex:1;min-width:0">
-            <div style="font-size:14px;font-weight:700">${r.name}</div>
-            <div style="font-size:11px;color:var(--muted);margin-top:2px">Депозит: ${r.deposited}₽ · ${r.joined}</div>
+            <div style="font-size:14px;font-weight:700">${_esc(r.name)}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Депозит: ${Math.round(r.deposited||0)}₽ · ${_esc(r.joined||'')}</div>
           </div>
           <div style="text-align:right;flex-shrink:0">
             <div style="font-size:15px;font-weight:900;color:var(--green)">+${Math.floor(r.earned)}₽</div>
@@ -5372,13 +5387,13 @@ function renderTasks() {
 
     return `
     <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
-      <div style="width:42px;height:42px;border-radius:12px;background:rgba(255,215,0,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${icon}</div>
+      <div style="width:42px;height:42px;border-radius:12px;background:rgba(255,215,0,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${_esc(icon)}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:14px;font-weight:700">${t.title}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">${t.description||''}</div>
+        <div style="font-size:14px;font-weight:700">${_esc(t.title)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${_esc(t.description||'')}</div>
       </div>
       <div style="text-align:right;flex-shrink:0">
-        <div style="font-size:15px;font-weight:900;color:var(--gold)">+${t.reward_amount}₽</div>
+        <div style="font-size:15px;font-weight:900;color:var(--gold)">+${parseFloat(t.reward_amount)||0}₽</div>
         ${actionBtn}
       </div>
     </div>`;
@@ -5682,13 +5697,13 @@ function renderTransactions(txs) {
     list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">История пуста</div>';
     return;
   }
-  const GAME_ICONS = { slots: '🎰', dice: '🎲', coinflip: '🪙', plinko: '🔵', mines: '💣', crash: '🚀', wheel: '🎡' };
-  const GAME_NAMES = { slots: 'Слоты', dice: 'Дайс', coinflip: 'Флип Коин', plinko: 'Плинко', mines: 'Минки', crash: 'Краш', wheel: 'Колесо' };
+  const GAME_ICONS = { slots: '🎰', dice: '🎲', coinflip: '🪙', plinko: '🔵', mines: '💣', crash: '🚀', wheel: '🎡', daily_bonus: '🎰' };
+  const GAME_NAMES = { slots: 'Слоты', dice: 'Дайс', coinflip: 'Флип Коин', plinko: 'Плинко', mines: 'Минки', crash: 'Краш', wheel: 'Колесо', daily_bonus: 'Ежедневный бонус' };
   list.innerHTML = txs.map(tx => {
     let icon, title, amtStr, color;
     if (tx.type === 'game') {
       icon = GAME_ICONS[tx.label] || '🎮';
-      title = GAME_NAMES[tx.label] || tx.label;
+      title = GAME_NAMES[tx.label] || _esc(String(tx.label));
       const profit = (tx.payout || 0) - (tx.amount || 0);
       amtStr = (profit >= 0 ? '+' : '') + Math.round(profit) + '₽';
       color = profit >= 0 ? 'var(--green)' : 'var(--red)';
@@ -5703,12 +5718,12 @@ function renderTransactions(txs) {
       amtStr = '-' + Math.round(tx.amount || 0) + '₽';
       color = 'var(--red)';
     }
-    const date = tx.created_at ? tx.created_at.slice(0, 16).replace('T', ' ') : '';
+    const rawDate = tx.created_at ? String(tx.created_at).replace(/[^0-9T:\-]/g, '').slice(0, 16).replace('T', ' ') : '';
     return `<div style="display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border)">
       <div style="width:38px;height:38px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${icon}</div>
       <div style="flex:1;min-width:0">
         <div style="font-size:14px;font-weight:700">${title}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:1px">${date}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">${rawDate}</div>
       </div>
       <div style="font-size:16px;font-weight:900;color:${color};flex-shrink:0">${amtStr}</div>
     </div>`;
@@ -5944,22 +5959,19 @@ function onBonusSpinEnd(prizeIdx, targetSlot) {
     if (cells[targetSlot]) cells[targetSlot].classList.add('bonus-strip-winner');
   }
 
-  // Credit balance locally; server will also persist it
-  state.balance += prize.value;
-  updateBalanceDisplay();
-
+  // Do NOT credit balance locally — wait for server's daily_bonus_ok to set authoritative balance
   const isRare = prize.value >= 7;
   playSound(isRare ? 'daily_win_rare' : 'daily_win_common');
   if (tg) tg.HapticFeedback?.notificationOccurred('success');
 
   const resultEl = document.getElementById('bonusResultBlock');
   if (resultEl) {
-    resultEl.innerHTML = `<div class="bonus-win-anim" style="font-size:${isRare?'30':'26'}px;font-weight:900;color:${isRare?'var(--gold)':'var(--text)'}">+${prize.label}${isRare ? ' 🎉' : ''}</div>`;
+    resultEl.innerHTML = `<div class="bonus-win-anim" style="font-size:${isRare?'30':'26'}px;font-weight:900;color:${isRare?'var(--gold)':'var(--text)'}">+${_esc(prize.label)}${isRare ? ' 🎉' : ''}</div>`;
   }
 
   updateDailyBonusStatus();
 
-  // Tell server to persist transaction
+  // Tell server to persist and credit; response: daily_bonus_ok | daily_bonus_error
   wsSend({ action: 'daily_bonus', amount: prize.value, prize_label: prize.label });
 }
 
