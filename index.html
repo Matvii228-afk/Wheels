@@ -2774,6 +2774,7 @@ function handleWSMessage(data) {
       wheelAllBetsData = [];
       renderWheelAllBets();
       updateWheelTimerUI();
+      _startWheelFakeBets();
       const btn = document.getElementById('wheelBetBtn');
       if (btn) { btn.disabled = false; updateWheelBetBtn(); }
     }
@@ -3381,6 +3382,7 @@ function showTab(id, el) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (el) el.classList.add('active');
   currentScreen = id;
+  window.scrollTo(0, 0);
   if (id === 'home') {
     wsSend({ action: 'get_tasks' });
   }
@@ -3396,6 +3398,7 @@ function openGame(game) {
   const screenId = game + '-screen';
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(screenId).classList.add('active');
+  window.scrollTo(0, 0);
   updateGameBalance(game);
   
   if (game === 'plinko') redrawPlinkoStatic();
@@ -3814,7 +3817,9 @@ function setPlinkoRisk(risk) {
   plinkoSettings.risk = risk;
   ['low','mid','high'].forEach(r => document.getElementById('risk-'+r)?.classList.remove('selected'));
   document.getElementById('risk-'+risk)?.classList.add('selected');
+  plinkoStaticCache = null;
   invalidatePlinkoStatic();
+  if (plinkoCtx) plinkoCtx.drawImage(getPlinkoStaticCache(), 0, 0);
 }
 
 function setPlinkoRows(rows) {
@@ -3824,7 +3829,9 @@ function setPlinkoRows(rows) {
   document.getElementById('rows-'+rows)?.classList.add('selected');
   const lbl = document.getElementById('plinkoRowsLabel');
   if (lbl) lbl.textContent = rows;
+  plinkoStaticCache = null;
   invalidatePlinkoStatic();
+  if (plinkoCtx) plinkoCtx.drawImage(getPlinkoStaticCache(), 0, 0);
 }
 
 function initPlinkoCanvas() {
@@ -3866,7 +3873,7 @@ function createBall(bet, serverPath) {
     y: topY - 20,
     vx: (Math.random()-0.5)*0.5,
     vy: 1,
-    radius: 7,
+    radius: 5,
     row: -1,
     pegRow: 0,
     path: [],
@@ -3917,9 +3924,9 @@ function getPlinkoStaticCache() {
   bg.addColorStop(0,'#0a0015'); bg.addColorStop(1,'#0d001a');
   ctx.fillStyle = bg; ctx.fillRect(0,0,W,H);
   pegs.forEach(row => row.forEach(peg => {
-    ctx.beginPath(); ctx.arc(peg.x,peg.y,4,0,Math.PI*2);
+    ctx.beginPath(); ctx.arc(peg.x,peg.y,3.5,0,Math.PI*2);
     ctx.fillStyle='rgba(180,140,255,0.85)'; ctx.fill();
-    ctx.beginPath(); ctx.arc(peg.x,peg.y,2,0,Math.PI*2);
+    ctx.beginPath(); ctx.arc(peg.x,peg.y,1.8,0,Math.PI*2);
     ctx.fillStyle='#fff'; ctx.fill();
   }));
   const bucketY = topY + ROWS * rowH + 8;
@@ -3983,6 +3990,9 @@ function updateAndDrawPlinko() {
 
     let bx, by;
 
+    const PEG_R = 3.5, BALL_R = 5;
+    const SURF = PEG_R + BALL_R; // дистанция центр-пег → центр-шар при касании
+
     if (step < ball.path.length) {
       const {slot} = ball.path[step];
       const rowPegs = pegs[step];
@@ -3991,17 +4001,19 @@ function updateAndDrawPlinko() {
       if (step === 0) {
         srcX = W / 2; srcY = topY - 22;
       } else {
+        // Источник — поверхность предыдущего пега (сверху)
         srcX = pegs[step - 1][ball.path[step - 1].slot].x;
-        srcY = pegs[step - 1][ball.path[step - 1].slot].y;
+        srcY = pegs[step - 1][ball.path[step - 1].slot].y - SURF;
       }
 
+      // Цель — поверхность текущего пега (сверху), шар касается но не залазит
       const tgtX = rowPegs[slot].x;
-      const tgtY = rowPegs[slot].y;
+      const tgtY = rowPegs[slot].y - SURF;
 
       const goRight = tgtX >= srcX;
       const side = goRight ? -1 : 1;
-      const ctrlX = tgtX + side * 9;
-      const ctrlY = (srcY + tgtY) / 2 - rowH * 0.15;
+      const ctrlX = tgtX + side * 8;
+      const ctrlY = (srcY + tgtY) / 2 - rowH * 0.1;
 
       bx = (1-t)*(1-t)*srcX + 2*(1-t)*t*ctrlX + t*t*tgtX;
       by = (1-t)*(1-t)*srcY + 2*(1-t)*t*ctrlY + t*t*tgtY;
@@ -4012,7 +4024,7 @@ function updateAndDrawPlinko() {
       const bucketX = 10 + ball.finalSlot * bw + bw / 2;
       const dropT = Math.min(rawT * 1.8, 1);
       bx = lastPeg.x + (bucketX - lastPeg.x) * dropT;
-      by = lastPeg.y + (bucketY + 11 - lastPeg.y) * (dropT * dropT);
+      by = (lastPeg.y - SURF) + (bucketY + 11 - (lastPeg.y - SURF)) * (dropT * dropT);
 
       if (rawT >= 1) {
         if (ball.serverMult !== null) {
@@ -4546,6 +4558,7 @@ function initWheelCanvas() {
   wheelCtx.scale(dpr, dpr);
   drawWheel(0);
   updateWheelTimerUI();
+  _startWheelFakeBets();
 }
 
 function buildWheelSlices() {
@@ -4678,7 +4691,26 @@ function drawWheel(angle) {
 // ══ Wheel bet state ══
 let wheelMyBets = {};         // mult -> amount placed this round
 let selectedWheelTab = 2;     // currently selected multiplier tab
-// wheelRoundNum removed
+let _wheelFakeBetTimer = null;
+
+function _startWheelFakeBets() {
+  if (_wheelFakeBetTimer) clearInterval(_wheelFakeBetTimer);
+  const _AV = ['🐱','🐶','🦊','🐼','🦁','🐯','🐻','🐸','🦅','🦋','🐨','🐰'];
+  const _MO = [2,3,5,20];
+  const _AMT = [5,10,25,50,100,200];
+  _wheelFakeBetTimer = setInterval(() => {
+    if (wheelState.phase !== 'waiting' || wheelState.spinning) return;
+    if (Math.random() > 0.6) return; // не каждый тик
+    const name = _fakeNick();
+    const avatar = _AV[Math.floor(Math.random()*_AV.length)];
+    const mult = _MO[Math.floor(Math.random()*_MO.length)];
+    const amount = _AMT[Math.floor(Math.random()*_AMT.length)];
+    const ex = wheelAllBetsData.find(b => b.name === name && !b.isMe);
+    if (ex) { ex.bets[mult] = (ex.bets[mult]||0)+amount; }
+    else { wheelAllBetsData.push({ name, avatar, bets:{[mult]:amount}, isMe:false }); }
+    renderWheelAllBets();
+  }, 1500);
+}
 
 // All bets from all players this round: [{name, avatar, bets:{2:x,3:y,...}}]
 let wheelAllBetsData = [];
@@ -4775,16 +4807,14 @@ function placeWheelBet() {
   wheelState.betPlaced = true;
   wheelState.betAmount = (wheelState.betAmount || 0) + bet;
 
-  // Если WS подключён — сервер пришлёт wheel_new_bet, не дублируем
-  if (!wsSentWheel) {
-    let myEntry = wheelAllBetsData.find(b => b.isMe);
-    if (!myEntry) {
-      myEntry = { name: '👤 Вы', avatar: '🙂', bets: {}, isMe: true };
-      wheelAllBetsData.push(myEntry);
-    }
-    myEntry.bets[mult] = (myEntry.bets[mult] || 0) + bet;
-    renderWheelAllBets();
+  // Всегда добавляем реального игрока с isMe:true — чтобы он не пропал при фильтре во время спина
+  let myEntry = wheelAllBetsData.find(b => b.isMe);
+  if (!myEntry) {
+    myEntry = { name: '👤 Вы', avatar: '🙂', bets: {}, isMe: true };
+    wheelAllBetsData.push(myEntry);
   }
+  myEntry.bets[mult] = (myEntry.bets[mult] || 0) + bet;
+  renderWheelAllBets();
   updateWheelBetBtn();
   updateWheelTimerUI();
 }
