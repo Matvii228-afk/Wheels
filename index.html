@@ -2619,12 +2619,22 @@
   <div style="background:var(--card);border-radius:24px 24px 0 0;padding:24px 20px 32px;width:100%;max-width:480px">
     <div style="font-size:18px;font-weight:900;margin-bottom:4px">💸 Вывод средств</div>
     <div id="withdrawSubtitle" style="font-size:12px;color:var(--muted);margin-bottom:16px">Вывод через @CryptoBot · комиссия 3%</div>
-    <div style="font-size:12px;color:rgba(250,200,50,.8);background:rgba(250,200,50,.08);border:1px solid rgba(250,200,50,.2);border-radius:10px;padding:10px 12px;margin-bottom:14px">
-      ⚠️ Убедись что запустил @CryptoBot — иначе перевод не пройдёт
+
+    <!-- Блок "нельзя вывести" -->
+    <div id="wagerBlock" style="display:none;color:#ff3f5e;font-size:15px;font-weight:700;margin-bottom:14px">
+      Отыграйте ещё <span id="wagerModalLabel"></span>
     </div>
-    <input id="withdrawAmount" type="number" min="100" placeholder="Сумма в рублях (мин. 100₽)"
-      style="width:100%;padding:13px 16px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;margin-bottom:12px;box-sizing:border-box">
-    <button onclick="submitWithdraw()" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-size:15px;font-weight:900;cursor:pointer">Вывести</button>
+
+    <!-- Обычный блок вывода (скрывается если вейджер не выполнен) -->
+    <div id="withdrawFormBlock">
+      <div style="font-size:12px;color:rgba(250,200,50,.8);background:rgba(250,200,50,.08);border:1px solid rgba(250,200,50,.2);border-radius:10px;padding:10px 12px;margin-bottom:14px">
+        ⚠️ Убедись что запустил @CryptoBot — иначе перевод не пройдёт
+      </div>
+      <input id="withdrawAmount" type="number" min="100" placeholder="Сумма в рублях (мин. 100₽)"
+        style="width:100%;padding:13px 16px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;margin-bottom:12px;box-sizing:border-box">
+      <button onclick="submitWithdraw()" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-size:15px;font-weight:900;cursor:pointer">Вывести</button>
+    </div>
+
     <button onclick="closeWithdrawModal()" style="width:100%;padding:12px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13px;cursor:pointer;margin-top:8px">Отмена</button>
   </div>
 </div>
@@ -2814,6 +2824,9 @@ let state = {
   antiMinus: false,
   userId: tg?.initDataUnsafe?.user?.id || 0,
   username: tg?.initDataUnsafe?.user?.first_name || 'Игрок',
+  wager_remaining: 0,
+  wager_total: 0,
+  wager_mult: 2,
   stats: { total_bets: 0, total_wins: 0, total_losses: 0, total_wagered: 0, total_won: 0 }
 };
 
@@ -3090,6 +3103,10 @@ function handleWSMessage(data) {
   if (type === 'init') {
     if (data.balance !== undefined) {
       state.balance = data.balance;
+      if (data.wager_remaining != null) {
+        state.wager_remaining = data.wager_remaining;
+        state.wager_total = data.wager_total || 0;
+      }
       updateBalanceDisplay();
     }
     if (data.crash) {
@@ -3133,7 +3150,14 @@ function handleWSMessage(data) {
 
   if (type === 'balance') {
     state.balance = data.balance;
+    if (data.wager_remaining != null) {
+      state.wager_remaining = data.wager_remaining;
+      state.wager_total = data.wager_total || 0;
+    }
     updateBalanceDisplay();
+    if (document.getElementById('withdrawModal')?.style.display === 'flex') {
+      updateWithdrawModalWager();
+    }
   }
 
   if (type === 'daily_bonus_ok') {
@@ -3245,7 +3269,9 @@ function handleWSMessage(data) {
       spread: data.spread || 3,
       min_deposit: data.min_deposit || 100,
       min_withdraw: data.min_withdraw || 100,
+      wager_multiplier: data.wager_multiplier || 2,
     };
+    state.wager_mult = depositInfo.wager_multiplier;
     updateDepositUI();
   }
 
@@ -3261,7 +3287,13 @@ function handleWSMessage(data) {
 
   if (type === 'deposit_ok') {
     state.balance = data.balance;
+    if (data.wager_remaining != null) {
+      state.wager_remaining = data.wager_remaining;
+      state.wager_total = data.wager_total || data.wager_remaining;
+      state.wager_mult = data.wager_mult || state.wager_mult;
+    }
     updateBalanceDisplay();
+    updateWagerDisplay();
     closeDepositModal();
     showResult(true, '💎', 'Баланс пополнен!', '+' + Math.floor(data.amount) + '₽');
     currentInvoiceId = null;
@@ -3289,7 +3321,12 @@ function handleWSMessage(data) {
   }
 
   if (type === 'withdraw_error') {
-    showToast(data.msg);
+    if (data.wager_remaining != null) {
+      state.wager_remaining = data.wager_remaining;
+      updateWithdrawModalWager();
+    } else {
+      showToast(data.msg);
+    }
   }
 
   if (type === 'error') {
@@ -5483,10 +5520,28 @@ function closeDepositModal() {
   document.getElementById('depositModal').style.display = 'none';
 }
 
+
+function updateWithdrawModalWager() {
+  const wr = state.wager_remaining || 0;
+  const wagerBlock = document.getElementById('wagerBlock');
+  const formBlock  = document.getElementById('withdrawFormBlock');
+  if (!wagerBlock || !formBlock) return;
+  if (wr <= 0) {
+    wagerBlock.style.display = 'none';
+    formBlock.style.display  = '';
+    return;
+  }
+  wagerBlock.style.display = '';
+  formBlock.style.display  = 'none';
+  document.getElementById('wagerModalLabel').textContent = Math.ceil(wr) + '₽';
+}
+
 function openWithdrawModal() {
   document.getElementById('withdrawAmount').value = '';
   updateDepositUI();
+  updateWithdrawModalWager();
   wsSend({ action: 'get_deposit_info' });
+  wsSend({ action: 'get_balance' });
   const m = document.getElementById('withdrawModal');
   m.style.display = 'flex';
 }
