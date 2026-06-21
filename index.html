@@ -3281,7 +3281,11 @@ function handleWSMessage(data) {
     state.balance = data.balance;
     updateBalanceDisplay();
     closeWithdrawModal();
-    showResult(true, '💸', 'Вывод выполнен!', Math.floor(data.amount) + '₽ отправлено в крипте');
+    if (data.pending) {
+      showResult(true, '⏳', 'На обработке!', Math.floor(data.amount) + '₽ — ожидает подтверждения администратора');
+    } else {
+      showResult(true, '💸', 'Вывод выполнен!', Math.floor(data.amount) + '₽ отправлено в крипте');
+    }
   }
 
   if (type === 'withdraw_error') {
