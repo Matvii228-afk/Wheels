@@ -2972,8 +2972,13 @@ function handleWSMessage(data) {
       wheelState.spinning = false;
       wheelState.wsResultReceived = false;
       wheelMyBets = {};
-      wheelAllBetsData = [];
-      renderWheelAllBets();
+      // Не сбрасываем список пока идёт анимация — сбросим в wheelFinish
+      if (!wheelState.animating) {
+        wheelAllBetsData = [];
+        renderWheelAllBets();
+      } else {
+        wheelState.pendingClear = true;
+      }
       updateWheelTimerUI();
       _startWheelFakeBets();
       const btn = document.getElementById('wheelBetBtn');
@@ -3007,7 +3012,8 @@ function handleWSMessage(data) {
   }
   
   if (type === 'wheel_new_bet') {
-    // Add to display
+    // Пропускаем эхо собственной ставки — уже добавлена локально в placeWheelBet
+    if (data.name === state.username || (data.user_id && data.user_id === state.userId)) return;
     const existing = wheelAllBetsData.find(b => b.name === data.name && !b.isMe);
     if (existing) {
       existing.bets[data.mult] = (existing.bets[data.mult] || 0) + data.amount;
@@ -3455,6 +3461,8 @@ function renderCrashBets(bets) {
 // Wheel spin animation triggered by server result
 function doWheelSpinAnimation(resultIdx, slices) {
   if (!wheelCtx) return;
+  wheelState.animating = true;
+  wheelState.pendingClear = false;
   const N = slices.length;
   const SA = (Math.PI * 2) / N;
 
@@ -3492,6 +3500,7 @@ function doWheelSpinAnimation(resultIdx, slices) {
       wheelState.angle = endAngle;
       drawWheel(wheelState.angle);
       wheelState.spinning = false;
+      wheelState.animating = false;
       wheelFinish(WHEEL_SLICES[resultIdx]);
     }
   }
@@ -4833,6 +4842,8 @@ let wheelCanvas, wheelCtx;
 let wheelState = {
   angle: 0,
   spinning: false,
+  animating: false,
+  pendingClear: false,
   betMult: null,
   betAmount: 0,
   betPlaced: false,
@@ -5191,6 +5202,7 @@ function doWheelSpin() {
     } else {
       wheelState.angle = wheelState.angle%(Math.PI*2);
       wheelState.spinning = false;
+      wheelState.animating = false;
       wheelFinish(WHEEL_SLICES[resultIdx]);
     }
   }
@@ -5224,7 +5236,12 @@ function wheelFinish(resultSeg) {
   }
 
   wheelMyBets = {};
-  // Следующий раунд запускает сервер через wheel_phase:waiting
+  // Если wheel_phase:waiting пришёл пока шла анимация — сбрасываем список теперь
+  if (wheelState.pendingClear) {
+    wheelState.pendingClear = false;
+    wheelAllBetsData = [];
+    renderWheelAllBets();
+  }
 }
 
 function renderWheelAllBets() {
