@@ -3664,9 +3664,10 @@ function handleWSMessage(data) {
     if (battleState.localCountdownInterval) { clearInterval(battleState.localCountdownInterval); battleState.localCountdownInterval = null; }
     battleState.phase = data.phase || 'waiting';
     battleState.players = (data.players || []).map((p, i) => ({
-      id: p.id, name: p.name, avatar: p.avatar || '👤',
-      bet: p.bet, color: BATTLE_COLORS[i % BATTLE_COLORS.length], isMe: p.id === state.userId,
+      id: p.id, name: p.name, avatar: p.avatar || '',
+      bet: p.bet, color: BATTLE_COLORS[i % BATTLE_COLORS.length], isMe: String(p.id) === String(state.userId),
     }));
+    battleState.players.forEach(p => { if (p.avatar) _loadBattleImg(p.avatar); });
     battleState.totalBank = data.total_bank || battleState.players.reduce((s, p) => s + p.bet, 0);
     battleState.countdown = data.countdown || 40;
     battleState.myPlaced = battleState.players.some(p => p.isMe);
@@ -3676,26 +3677,22 @@ function handleWSMessage(data) {
 
   if (type === 'battle_new_bet') {
     battleState.wsControlled = true;
-    const bpIdx = battleState.players.findIndex(p => p.id === data.player_id);
-    if (bpIdx >= 0) {
-      battleState.players[bpIdx].bet += data.amount;
-    } else {
-      battleState.players.push({
-        id: data.player_id, name: data.name, avatar: data.avatar || '👤',
-        bet: data.amount, color: BATTLE_COLORS[battleState.players.length % BATTLE_COLORS.length],
-        isMe: data.player_id === state.userId,
-      });
-    }
-    if (data.player_id === state.userId) {
-      state.balance = data.balance;
-      updateBalanceDisplay();
-      battleState.myPlaced = true;
-      battleState.myBet = (battleState.players.find(p => p.isMe) || {}).bet || 0;
+    if (data.players) {
+      battleState.players = data.players.map((p, i) => ({
+        id: p.id, name: p.name, avatar: p.avatar || '',
+        bet: p.bet, color: BATTLE_COLORS[i % BATTLE_COLORS.length], isMe: String(p.id) === String(state.userId),
+      }));
+      battleState.players.forEach(p => { if (p.avatar) _loadBattleImg(p.avatar); });
     }
     battleState.totalBank = data.total_bank || battleState.players.reduce((s, p) => s + p.bet, 0);
+    const mePlayer = battleState.players.find(p => p.isMe);
+    if (mePlayer) {
+      battleState.myPlaced = true;
+      battleState.myBet = mePlayer.bet;
+    }
     if (battleState.players.length >= 2 && battleState.phase === 'waiting') {
       battleState.phase = 'countdown';
-      battleState.countdown = data.countdown || 40;
+      battleState.countdown = 40;
     }
     if (battleCtx) updateBattleUI();
   }
@@ -3704,7 +3701,8 @@ function handleWSMessage(data) {
     battleState.wsControlled = true;
     battleState.phase = 'countdown';
     battleState.countdown = data.countdown;
-    if (battleCtx) updateBattleUI();
+    if (data.total_bank !== undefined) battleState.totalBank = data.total_bank;
+    if (battleCtx) _updateBattleCountdownUI();
   }
 
   if (type === 'battle_phase') {
@@ -6690,7 +6688,21 @@ let battleState = {
 
 let battleCanvas, battleCtx;
 let battleInited = false;
-let _battleFakeTimer = null;
+const _battleImgCache = {}; // url -> HTMLImageElement | false
+
+function _loadBattleImg(url) {
+  if (!url || !url.startsWith('http')) return;
+  if (url in _battleImgCache) return;
+  _battleImgCache[url] = null;
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    _battleImgCache[url] = img;
+    if (!battleState.animating) drawBattleWheel(battleState.angle);
+  };
+  img.onerror = () => { _battleImgCache[url] = false; };
+  img.src = url;
+}
 
 function initBattleCanvas() {
   battleCanvas = document.getElementById('battleCanvas');
@@ -6703,7 +6715,6 @@ function initBattleCanvas() {
   battleCtx.scale(dpr, dpr);
   drawBattleWheel(0);
   updateBattleUI();
-  _startBattleFakePlayers();
   wsSend({ action: 'battle_join' });
 }
 
@@ -6777,22 +6788,37 @@ function drawBattleWheel(angle) {
       if (frac > 0.06) {
         const lx = cx + Math.cos(midAngle) * (R * 0.65);
         const ly = cy + Math.sin(midAngle) * (R * 0.65);
-        battleCtx.save();
-        battleCtx.translate(lx, ly);
-        battleCtx.rotate(midAngle + Math.PI / 2);
-        battleCtx.textAlign = 'center';
-        battleCtx.textBaseline = 'middle';
-        battleCtx.font = '13px sans-serif';
-        battleCtx.fillStyle = 'rgba(0,0,0,0.4)';
-        battleCtx.fillText(player.avatar || '👤', 1, 1);
-        battleCtx.fillStyle = '#fff';
-        battleCtx.fillText(player.avatar || '👤', 0, 0);
+        const aR = 12;
+        const img = player.avatar ? _battleImgCache[player.avatar] : undefined;
+        if (img) {
+          battleCtx.save();
+          battleCtx.beginPath();
+          battleCtx.arc(lx, ly, aR, 0, Math.PI * 2);
+          battleCtx.clip();
+          battleCtx.drawImage(img, lx - aR, ly - aR, aR * 2, aR * 2);
+          battleCtx.restore();
+        } else {
+          if (player.avatar) _loadBattleImg(player.avatar);
+          const initLetter = (player.name || '?')[0].toUpperCase();
+          battleCtx.save();
+          battleCtx.beginPath();
+          battleCtx.arc(lx, ly, aR, 0, Math.PI * 2);
+          battleCtx.fillStyle = 'rgba(0,0,0,0.35)';
+          battleCtx.fill();
+          battleCtx.textAlign = 'center';
+          battleCtx.textBaseline = 'middle';
+          battleCtx.font = 'bold 11px "Segoe UI",sans-serif';
+          battleCtx.fillStyle = '#fff';
+          battleCtx.fillText(initLetter, lx, ly);
+          battleCtx.restore();
+        }
         if (frac > 0.1) {
+          battleCtx.textAlign = 'center';
+          battleCtx.textBaseline = 'middle';
           battleCtx.font = 'bold 9px "Segoe UI",sans-serif';
           battleCtx.fillStyle = 'rgba(255,255,255,0.9)';
-          battleCtx.fillText(Math.round(frac * 100) + '%', 0, 14);
+          battleCtx.fillText(Math.round(frac * 100) + '%', lx, ly + aR + 7);
         }
-        battleCtx.restore();
       }
 
       // Золотая рамка для "меня"
@@ -6894,8 +6920,11 @@ function renderBattlePlayersList() {
     .map(p => {
       const chance = total > 0 ? (p.bet / total * 100).toFixed(1) : '0';
       const isMe = p.isMe;
+      const avatarHtml = (p.avatar && p.avatar.startsWith('http'))
+        ? `<img src="${_esc(p.avatar)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+        : `<span style="font-size:14px;font-weight:700;color:#fff">${_esc((p.name||'?')[0].toUpperCase())}</span>`;
       return `<div class="battle-player-item" style="${isMe ? 'border-color:rgba(255,215,0,0.35);background:rgba(255,215,0,0.05)' : ''}">
-        <div class="battle-player-avatar" style="background:${p.color}30;border-color:${p.color}80">${_esc(p.avatar || '👤')}</div>
+        <div class="battle-player-avatar" style="background:${p.color}30;border-color:${p.color}80;display:flex;align-items:center;justify-content:center;overflow:hidden">${avatarHtml}</div>
         <div class="battle-player-info">
           <div class="battle-player-name" style="${isMe ? 'color:var(--gold)' : ''}">${_esc(p.name)}${isMe ? ' (Вы)' : ''}</div>
           <div class="battle-player-bet">₽ ${Math.floor(p.bet)} в банке</div>
@@ -6938,7 +6967,7 @@ function placeBattleBet() {
     myPlayer = {
       id: state.userId || -999,
       name: state.username || 'Игрок',
-      avatar: '🙂',
+      avatar: tg?.initDataUnsafe?.user?.photo_url || '',
       bet,
       color: BATTLE_COLORS[battleState.players.length % BATTLE_COLORS.length],
       isMe: true,
@@ -6961,6 +6990,17 @@ function placeBattleBet() {
   updateBattleUI();
 }
 
+function _updateBattleCountdownUI() {
+  const timerDisp  = document.getElementById('battleTimerDisplay');
+  const timerFill  = document.getElementById('battleTimerFill');
+  const bankDisp   = document.getElementById('battleBankDisplay');
+  const phaseBadge = document.getElementById('battlePhaseBadge');
+  if (timerDisp)  timerDisp.textContent = battleState.countdown + 'с';
+  if (timerFill)  timerFill.style.width = (battleState.countdown / 40 * 100) + '%';
+  if (bankDisp)   bankDisp.textContent  = Math.floor(battleState.totalBank) + '₽';
+  if (phaseBadge) phaseBadge.textContent = '🔥 ИДЁТ НАБОР!';
+}
+
 function _startBattleCountdown() {
   if (battleState.localCountdownInterval) return;
   battleState.phase = 'countdown';
@@ -6968,7 +7008,7 @@ function _startBattleCountdown() {
   updateBattleUI();
   battleState.localCountdownInterval = setInterval(() => {
     battleState.countdown--;
-    updateBattleUI();
+    _updateBattleCountdownUI();
     if (battleState.countdown <= 0) {
       clearInterval(battleState.localCountdownInterval);
       battleState.localCountdownInterval = null;
@@ -7073,7 +7113,6 @@ function resetBattle() {
     clearInterval(battleState.localCountdownInterval);
     battleState.localCountdownInterval = null;
   }
-  if (_battleFakeTimer) { clearTimeout(_battleFakeTimer); _battleFakeTimer = null; }
   battleState.phase            = 'waiting';
   battleState.players          = [];
   battleState.totalBank        = 0;
@@ -7083,55 +7122,6 @@ function resetBattle() {
   battleState.wsResultReceived = false;
   battleState.angle            = 0;
   if (battleCtx) updateBattleUI();
-  setTimeout(() => _startBattleFakePlayers(), 2500);
-}
-
-// Фейковые игроки для реализма (когда нет реальных)
-const _BATTLE_FAKE_NAMES  = ['Sigma99','XenBolt','KryoArc','DimaVIP','Maximus','SashaPro','RomaGG','IvanKing','Kolya777','TemaX','VladXD','NikitaWin'];
-const _BATTLE_FAKE_AVATS  = ['🐱','🐶','🦊','🐼','🦁','🐯','🐻','🐸','🦅','🦋','🐨','🐰'];
-const _BATTLE_FAKE_AMTS   = [10, 25, 50, 100, 200];
-
-function _startBattleFakePlayers() {
-  if (_battleFakeTimer) clearTimeout(_battleFakeTimer);
-
-  function addFake() {
-    if (battleState.phase === 'spinning' || battleState.phase === 'result') return;
-    if (battleState.wsControlled) return;
-    if (battleState.players.length >= 7) return;
-
-    const idx    = Math.floor(Math.random() * _BATTLE_FAKE_NAMES.length);
-    const name   = _BATTLE_FAKE_NAMES[idx];
-    const avatar = _BATTLE_FAKE_AVATS[idx % _BATTLE_FAKE_AVATS.length];
-    const amount = _BATTLE_FAKE_AMTS[Math.floor(Math.random() * _BATTLE_FAKE_AMTS.length)];
-
-    const existing = battleState.players.find(p => p.name === name);
-    if (existing && battleState.phase === 'countdown') {
-      // Существующий добавляет к ставке
-      existing.bet += amount;
-    } else if (!existing) {
-      battleState.players.push({
-        id: -(idx + 1),
-        name, avatar, bet: amount,
-        color: BATTLE_COLORS[battleState.players.length % BATTLE_COLORS.length],
-        isMe: false,
-      });
-    }
-
-    battleState.totalBank = battleState.players.reduce((s, p) => s + p.bet, 0);
-
-    // Старт таймера при 2+ игроках
-    if (battleState.players.length >= 2 && battleState.phase === 'waiting') {
-      _startBattleCountdown();
-    }
-
-    if (battleCtx) updateBattleUI();
-
-    if (battleState.phase !== 'spinning' && battleState.phase !== 'result' && battleState.players.length < 6) {
-      _battleFakeTimer = setTimeout(addFake, 2000 + Math.random() * 4000);
-    }
-  }
-
-  _battleFakeTimer = setTimeout(addFake, 1800 + Math.random() * 2500);
 }
 
 function openDocModal(type) {
