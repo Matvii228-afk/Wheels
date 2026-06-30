@@ -3200,17 +3200,7 @@ function handleWSMessage(data) {
   
   if (type === 'wheel_spin') {
     if (wheelState.countdownInterval) { clearInterval(wheelState.countdownInterval); wheelState.countdownInterval = null; }
-    wheelAllBetsData = wheelAllBetsData.filter(b => b.isMe);
-    // Фейк-игроки для реализма
-    const _AV = ['🐱','🐶','🦊','🐼','🦁','🐯','🐻','🐸','🦅','🦋'];
-    const _MO = [2,3,5,20];
-    const _NF = Math.floor(Math.random()*4)+3;
-    for (let i=0;i<_NF;i++) {
-      const fake = { name: _fakeNick(), avatar: _AV[Math.floor(Math.random()*_AV.length)], bets: {}, isMe: false };
-      const nb = Math.random()<0.7?1:2;
-      for (let j=0;j<nb;j++) { const m=_MO[Math.floor(Math.random()*_MO.length)]; const a=[1,2,5,10,25,50,100]; fake.bets[m]=(fake.bets[m]||0)+a[Math.floor(Math.random()*a.length)]; }
-      wheelAllBetsData.push(fake);
-    }
+    // Оставляем ботов которые уже набрались за время ожидания — не заменяем
     renderWheelAllBets();
     wheelState.spinning = true;
     wheelState.phase = 'spinning';
@@ -5463,21 +5453,7 @@ function updateWheelTimerUI() {
 
 function doWheelSpin() {
   if (wheelState.spinning) return;
-  wheelAllBetsData = wheelAllBetsData.filter(b => b.isMe);
-  const _AV2 = ['🐱','🐶','🦊','🐼','🦁','🐯','🐻','🐸','🦅','🦋'];
-  const multOpts = [2,3,5,20];
-  const numFakes = Math.floor(Math.random()*4)+3;
-  for (let i=0;i<numFakes;i++) {
-    const avatar = _AV2[Math.floor(Math.random()*_AV2.length)];
-    const fake = { name: _fakeNick(), avatar, bets: {}, isMe: false };
-    const numBets = Math.random() < 0.7 ? 1 : 2;
-    for (let j=0;j<numBets;j++) {
-      const m = multOpts[Math.floor(Math.random()*multOpts.length)];
-      const amts = [1, 2, 5, 10, 25, 50, 100];
-      fake.bets[m] = (fake.bets[m]||0) + amts[Math.floor(Math.random()*amts.length)];
-    }
-    wheelAllBetsData.push(fake);
-  }
+  // Оставляем ботов которые уже набрались за время ожидания — не заменяем
   renderWheelAllBets();
 
   wheelState.spinning = true;
