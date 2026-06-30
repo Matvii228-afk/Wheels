@@ -3285,6 +3285,7 @@ function handleWSMessage(data) {
     if (crashState.betPlaced && !crashState.cashedOut) {
       showResult(false, '💥', 'Крэш на ×' + data.mult.toFixed(2), '-' + crashState.betAmount + '₽');
     }
+    renderCrashBets();
     if (data.history) {
       crashState.history = data.history.slice(0, 6);
       renderCrashHistoryBadges();
@@ -3306,6 +3307,10 @@ function handleWSMessage(data) {
   
   if (type === 'crash_new_bet' || type === 'crash_player_cashout') {
     renderCrashBets(data.all_bets || []);
+  }
+
+  if (type === 'crash_phase' && data.phase === 'waiting') {
+    crashState.allBets = [];
   }
   
   if (type === 'init') {
@@ -3753,15 +3758,41 @@ function handleWSMessage(data) {
   }
 }
 
-function renderCrashBets(bets) {
+function _crashBetRow(label, amount, cashout, crashed) {
+  let statusHtml;
+  if (crashed) {
+    statusHtml = `<span style="color:var(--red);font-weight:800;font-size:12px">💥</span>`;
+  } else if (cashout) {
+    statusHtml = `<span style="color:var(--green);font-weight:800;font-size:12px">×${parseFloat(cashout).toFixed(2)}</span>`;
+  } else {
+    statusHtml = `<span style="color:#6b7fa8;font-size:11px">в игре</span>`;
+  }
+  return `<div class="online-bet-item">
+    <span class="online-bet-user" style="max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_esc(String(label))}</span>
+    <span class="online-bet-amount">${Math.round(parseFloat(amount||0))}₽</span>
+    ${statusHtml}
+  </div>`;
+}
+
+function renderCrashBets(serverBets) {
   const list = document.getElementById('crashBetsList');
   if (!list) return;
-  list.innerHTML = bets.slice(0, 8).map(b => `
-    <div class="online-bet-item">
-      <span class="online-bet-user">${_esc(b.avatar)} ${_esc(b.name)}</span>
-      <span class="online-bet-amount">${parseFloat(b.amount).toFixed(0)}₽</span>
-      <span class="online-bet-mult ${b.cashed_out ? 'won' : ''}">${b.cashed_out ? '×' + b.cashout_mult?.toFixed(2) : '—'}</span>
-    </div>`).join('');
+  if (serverBets !== undefined) {
+    crashState.allBets = serverBets;
+  }
+  const isWs = crashState.wsControlled && crashState.allBets.length > 0;
+  if (isWs) {
+    const crashed = crashState.phase === 'crashed';
+    list.innerHTML = crashState.allBets.slice(0, 12).map(b =>
+      _crashBetRow((b.avatar||'👤') + ' ' + (b.name||'?'), b.amount,
+        b.cashed_out ? b.cashout_mult : null, crashed && !b.cashed_out)
+    ).join('');
+  } else {
+    if (!crashState.bets.length) { list.innerHTML = ''; return; }
+    list.innerHTML = crashState.bets.slice(0, 12).map(b =>
+      _crashBetRow(b.user||'👤', b.amount, b.cashout||null, b.crashed||false)
+    ).join('');
+  }
 }
 
 // Wheel spin animation triggered by server result
@@ -4844,6 +4875,7 @@ let crashState = {
   cashedMult: 0,
   timer: null,
   bets: [],
+  allBets: [],
   history: [],
   wsControlled: false,  // true when server controls the game
 };
@@ -4893,13 +4925,18 @@ function crashLoop() {
     const phaseEl = document.getElementById('crashPhase');
     if (phaseEl) phaseEl.textContent = `⏳ Старт через ${countdown}с`;
     
-    // Add fake bet randomly
-    if (countdown < 12 && Math.random() < 0.3) {
+    // 1–2 бота только в конкретные моменты отсчёта
+    const _botAmts = [25, 50, 100, 200];
+    if (countdown === 10) {
       const _fn = FAKE_USERS[Math.floor(Math.random()*FAKE_USERS.length)];
-      const _rnd2 = Math.random();
-      const user = _rnd2 < 0.5 ? _fn + Math.floor(Math.random()*999+1) : (_rnd2 < 0.75 ? _fn + FAKE_USER_SUFFIXES[Math.floor(Math.random()*FAKE_USER_SUFFIXES.length)] : _fn + '_' + FAKE_USERS[Math.floor(Math.random()*FAKE_USERS.length)]);
-      const amount = [10,25,50,100][Math.floor(Math.random()*4)];
-      crashState.bets.push({ user, amount, cashout: null });
+      const amt = _botAmts[Math.floor(Math.random()*_botAmts.length)];
+      crashState.bets.push({ user: '👤 ' + _fn + Math.floor(Math.random()*900+100), amount: amt, cashout: null, crashed: false });
+      renderCrashBets();
+    }
+    if (countdown === 5 && Math.random() < 0.5) {
+      const _fn2 = FAKE_USERS[Math.floor(Math.random()*FAKE_USERS.length)];
+      const amt2 = _botAmts[Math.floor(Math.random()*_botAmts.length)];
+      crashState.bets.push({ user: '👤 ' + _fn2 + FAKE_USER_SUFFIXES[Math.floor(Math.random()*FAKE_USER_SUFFIXES.length)], amount: amt2, cashout: null, crashed: false });
       renderCrashBets();
     }
     
@@ -4946,13 +4983,15 @@ function runCrash() {
     crashPoints.push({ x: elapsed, y: crashState.mult });
     drawCrashGraph();
     
-    // Auto fake cashouts
+    // Auto fake cashouts для локальных ботов
+    let _botChanged = false;
     crashState.bets.forEach(bet => {
-      if (!bet.cashout && Math.random() < 0.005 && crashState.mult > 1.2) {
+      if (!bet.cashout && !bet.crashed && Math.random() < 0.008 && crashState.mult > 1.3) {
         bet.cashout = crashState.mult;
-        renderCrashBets();
+        _botChanged = true;
       }
     });
+    if (_botChanged) renderCrashBets();
     
     if (crashState.mult >= crashState.targetCrash) {
       doCrash();
@@ -4970,8 +5009,9 @@ function doCrash() {
   const cmEl2 = document.getElementById('crashMult');
   if (cpEl2) cpEl2.textContent = '💥 КРЭШ!';
   if (cmEl2) cmEl2.className = 'crash-multiplier crashed';
-  
-  // Локальный краш устарел — результат приходит через WS crash_result_personal
+  // Пометить все не выведенные локальные боты как сгоревшие
+  crashState.bets.forEach(b => { if (!b.cashout) b.crashed = true; });
+  renderCrashBets();
   updateCrashBtn();
 }
 
@@ -5125,16 +5165,6 @@ function cashoutCrash() {
   tg?.HapticFeedback?.notificationOccurred('success');
 }
 
-function renderCrashBets() {
-  const list = document.getElementById('crashBetsList');
-  list.innerHTML = crashState.bets.slice(0,8).map(b => `
-    <div class="online-bet-item">
-      <span class="online-bet-user">${_esc(b.user)}</span>
-      <span class="online-bet-amount">${parseFloat(b.amount).toFixed(0)}₽</span>
-      <span class="online-bet-mult ${b.cashout ? 'won' : ''}">${b.cashout ? `×${parseFloat(b.cashout).toFixed(2)}` : '—'}</span>
-    </div>
-  `).join('');
-}
 
 // ══════════════════════════════════
 // ════ WHEEL (ONLINE) ════
