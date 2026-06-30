@@ -3725,20 +3725,35 @@ function handleWSMessage(data) {
     if (battleState.localCountdownInterval) { clearInterval(battleState.localCountdownInterval); battleState.localCountdownInterval = null; }
     battleState.phase = 'spinning';
     if (battleCtx) updateBattleUI();
-    const bWinner = battleState.players.find(p => p.id === data.winner_id) || battleState.players[0];
+    const bWinner = battleState.players.find(p => String(p.id) === String(data.winner_id)) || battleState.players[0];
     if (bWinner && battleCtx) doBattleSpinAnimation(bWinner);
+  }
+
+  if (type === 'battle_bet_placed') {
+    state.balance = data.balance;
+    updateBalanceDisplay();
+    updateGameBalance('battle');
+    battleState.myPlaced = true;
+    if (data.total_bet !== undefined) battleState.myBet = data.total_bet;
+  }
+
+  if (type === 'battle_personal_result') {
+    state.balance = data.balance;
+    updateBalanceDisplay();
+    updateGameBalance('battle');
+    if (data.won && data.payout) {
+      showResult(true, '🏆', 'Вы победили!', '+' + Math.floor(data.payout) + '₽');
+      playSound('win_big');
+      tg?.HapticFeedback?.notificationOccurred('success');
+    }
   }
 
   if (type === 'battle_result') {
     battleState.wsControlled = true;
     battleState.wsResultReceived = true;
-    if (data.balance !== undefined) { state.balance = data.balance; updateBalanceDisplay(); updateGameBalance('battle'); }
-    const bIsMe = data.winner_id === state.userId;
-    const bWinnerPlayer = battleState.players.find(p => p.id === data.winner_id);
-    if (bIsMe && data.payout) {
-      showResult(true, '🏆', 'Вы победили!', '+' + Math.floor(data.payout) + '₽');
-      playSound('win_big');
-    } else if (bWinnerPlayer) {
+    const bIsMe = String(data.winner_id) === String(state.userId);
+    const bWinnerPlayer = battleState.players.find(p => String(p.id) === String(data.winner_id));
+    if (!bIsMe && bWinnerPlayer) {
       showResult(false, '💔', 'Победил ' + _esc(bWinnerPlayer.name), '');
       playSound('lose');
     }
