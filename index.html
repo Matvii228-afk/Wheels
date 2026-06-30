@@ -1802,6 +1802,144 @@
     0% { width: 0%; }
     100% { width: 100%; }
   }
+
+  /* ══════════════════════════════════
+     BATTLE (КОРОЛЕВСКАЯ БИТВА)
+  ══════════════════════════════════ */
+  #battle-screen {
+    background: #0a0f1e;
+    padding-bottom: 80px;
+  }
+  #battle-screen .game-header {
+    background: #0a0f1e;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .battle-wheel-zone {
+    background: linear-gradient(180deg, #0f1630 0%, #0a0f1e 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 14px 0 32px;
+    position: relative;
+  }
+  .battle-wheel-wrap {
+    position: relative;
+    width: 240px;
+    height: 240px;
+  }
+  #battleCanvas {
+    border-radius: 50%;
+    box-shadow: 0 0 40px rgba(0,0,0,0.7), 0 0 0 3px rgba(255,255,255,0.08);
+    width: 240px !important;
+    height: 240px !important;
+  }
+  .battle-pointer-top {
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    width: 0; height: 0;
+    border-left: 9px solid transparent;
+    border-right: 9px solid transparent;
+    border-top: 16px solid #fff;
+    filter: drop-shadow(0 2px 8px rgba(255,255,255,0.9));
+  }
+  .battle-phase-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.75);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 4px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    z-index: 20;
+  }
+  .battle-info-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    background: #0d1422;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .battle-info-item { text-align: center; padding: 10px 8px; }
+  .battle-info-label { font-size: 10px; color: #6b7fa8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 3px; }
+  .battle-info-value { font-size: 20px; font-weight: 900; color: #fff; font-variant-numeric: tabular-nums; }
+  .battle-timer-bar { height: 3px; background: rgba(255,255,255,0.06); overflow: hidden; }
+  .battle-timer-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff6b6b, #ff4444);
+    border-radius: 2px;
+    transition: width 1s linear;
+    width: 0%;
+  }
+  .battle-players-list {
+    overflow-y: auto;
+    max-height: 155px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    scrollbar-width: none;
+  }
+  .battle-players-list::-webkit-scrollbar { display: none; }
+  .battle-player-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.05);
+    animation: fadeIn 0.3s ease;
+  }
+  .battle-player-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.1);
+  }
+  .battle-player-info { flex: 1; min-width: 0; }
+  .battle-player-name { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #c0cce0; }
+  .battle-player-bet { font-size: 10px; color: #6b7fa8; margin-top: 1px; }
+  .battle-player-chance { font-size: 14px; font-weight: 900; flex-shrink: 0; }
+  .battle-bet-panel {
+    background: #111826;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+  }
+  .battle-bet-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .battle-bet-input-wrap {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    display: flex; align-items: center;
+    padding: 8px 12px; gap: 6px;
+  }
+  .battle-bet-input-wrap input {
+    background: none; border: none; color: #fff;
+    font-size: 18px; font-weight: 700; width: 100%; outline: none;
+  }
+  .battle-bet-currency { color: #6b7fa8; font-size: 13px; }
+  .battle-join-btn {
+    padding: 10px 16px;
+    border-radius: 10px; border: none; color: #fff;
+    font-size: 14px; font-weight: 800; cursor: pointer;
+    white-space: nowrap; transition: all 0.2s;
+    background: linear-gradient(135deg, #ff6b6b, #cc1111);
+    min-width: 110px;
+  }
+  .battle-join-btn:active { transform: scale(0.96); }
+  .battle-join-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
 </style>
 </head>
 <body>
@@ -1934,6 +2072,12 @@
         <div class="game-icon">🎡</div>
         <div class="game-name">Колесо</div>
         <div class="game-desc">х2 х3 х5 х20 — Реальное онлайн колесо</div>
+      </div>
+      <div class="game-card online" onclick="openGame('battle')" style="grid-column:1/-1">
+        <span class="badge badge-live">LIVE</span>
+        <div class="game-icon">⚔️</div>
+        <div class="game-name">Королевская Битва</div>
+        <div class="game-desc">Все против всех — победитель забирает весь банк!</div>
       </div>
     </div>
   </div>
@@ -2386,6 +2530,74 @@
       <div class="wpcol-list" id="wplist20"></div>
     </div>
 
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     BATTLE (КОРОЛЕВСКАЯ БИТВА)
+══════════════════════════════════ -->
+<div class="screen" id="battle-screen">
+  <div class="game-header">
+    <button class="back-btn" onclick="closeGame()">‹</button>
+    <span class="game-header-title">⚔️ Королевская Битва</span>
+    <span class="game-header-balance" id="battleBalance">0₽</span>
+  </div>
+
+  <!-- Колесо -->
+  <div class="battle-wheel-zone">
+    <div class="battle-wheel-wrap">
+      <div class="battle-pointer-top"></div>
+      <canvas id="battleCanvas" width="240" height="240"></canvas>
+    </div>
+    <div class="battle-phase-badge" id="battlePhaseBadge">⏳ ОЖИДАНИЕ ИГРОКОВ</div>
+  </div>
+
+  <!-- Банк / Таймер / Игроки -->
+  <div class="battle-info-bar">
+    <div class="battle-info-item">
+      <div class="battle-info-label">Банк</div>
+      <div class="battle-info-value" style="color:#FFD700" id="battleBankDisplay">0₽</div>
+    </div>
+    <div class="battle-info-item" style="border-left:1px solid rgba(255,255,255,0.06);border-right:1px solid rgba(255,255,255,0.06)">
+      <div class="battle-info-label" id="battleTimerLabel">ТАЙМЕР</div>
+      <div class="battle-info-value" id="battleTimerDisplay">—</div>
+    </div>
+    <div class="battle-info-item">
+      <div class="battle-info-label">Игроки</div>
+      <div class="battle-info-value" style="color:#00e87a" id="battlePlayerCountDisplay">0</div>
+    </div>
+  </div>
+
+  <!-- Прогресс-бар таймера -->
+  <div class="battle-timer-bar">
+    <div class="battle-timer-fill" id="battleTimerFill"></div>
+  </div>
+
+  <!-- Список игроков -->
+  <div class="battle-players-list" id="battlePlayersList">
+    <div style="text-align:center;padding:20px;color:#6b7fa8;font-size:13px">Ждём первого игрока...</div>
+  </div>
+
+  <!-- Панель ставки -->
+  <div class="battle-bet-panel">
+    <div class="battle-bet-row">
+      <div class="battle-bet-input-wrap">
+        <span class="battle-bet-currency">₽</span>
+        <input id="battleBetInput" type="number" value="10" min="1" oninput="updateBattleBtn()">
+      </div>
+      <button id="battleBetBtn" class="battle-join-btn" onclick="placeBattleBet()">
+        Участвовать
+      </button>
+    </div>
+    <div style="display:flex;gap:6px">
+      <div class="wheel-preset" onclick="setBet('battleBetInput',10)">10</div>
+      <div class="wheel-preset" onclick="setBet('battleBetInput',25)">25</div>
+      <div class="wheel-preset" onclick="setBet('battleBetInput',50)">50</div>
+      <div class="wheel-preset" onclick="setBet('battleBetInput',100)">100</div>
+      <div class="wheel-preset" onclick="halfBet('battleBetInput')">÷2</div>
+      <div class="wheel-preset" onclick="doubleBet('battleBetInput')">×2</div>
+      <div class="wheel-preset" onclick="maxBet('battleBetInput')" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border-color:var(--gold);font-weight:900">MAX</div>
+    </div>
   </div>
 </div>
 
@@ -3445,6 +3657,97 @@ function handleWSMessage(data) {
     minesGridLocked = false;
     minesCashingOut = false;
   }
+
+  // ── BATTLE ──
+  if (type === 'battle_state') {
+    battleState.wsControlled = true;
+    if (battleState.localCountdownInterval) { clearInterval(battleState.localCountdownInterval); battleState.localCountdownInterval = null; }
+    battleState.phase = data.phase || 'waiting';
+    battleState.players = (data.players || []).map((p, i) => ({
+      id: p.id, name: p.name, avatar: p.avatar || '👤',
+      bet: p.bet, color: BATTLE_COLORS[i % BATTLE_COLORS.length], isMe: p.id === state.userId,
+    }));
+    battleState.totalBank = data.total_bank || battleState.players.reduce((s, p) => s + p.bet, 0);
+    battleState.countdown = data.countdown || 40;
+    battleState.myPlaced = battleState.players.some(p => p.isMe);
+    battleState.myBet = (battleState.players.find(p => p.isMe) || {}).bet || 0;
+    if (battleCtx) updateBattleUI();
+  }
+
+  if (type === 'battle_new_bet') {
+    battleState.wsControlled = true;
+    const bpIdx = battleState.players.findIndex(p => p.id === data.player_id);
+    if (bpIdx >= 0) {
+      battleState.players[bpIdx].bet += data.amount;
+    } else {
+      battleState.players.push({
+        id: data.player_id, name: data.name, avatar: data.avatar || '👤',
+        bet: data.amount, color: BATTLE_COLORS[battleState.players.length % BATTLE_COLORS.length],
+        isMe: data.player_id === state.userId,
+      });
+    }
+    if (data.player_id === state.userId) {
+      state.balance = data.balance;
+      updateBalanceDisplay();
+      battleState.myPlaced = true;
+      battleState.myBet = (battleState.players.find(p => p.isMe) || {}).bet || 0;
+    }
+    battleState.totalBank = data.total_bank || battleState.players.reduce((s, p) => s + p.bet, 0);
+    if (battleState.players.length >= 2 && battleState.phase === 'waiting') {
+      battleState.phase = 'countdown';
+      battleState.countdown = data.countdown || 40;
+    }
+    if (battleCtx) updateBattleUI();
+  }
+
+  if (type === 'battle_countdown') {
+    battleState.wsControlled = true;
+    battleState.phase = 'countdown';
+    battleState.countdown = data.countdown;
+    if (battleCtx) updateBattleUI();
+  }
+
+  if (type === 'battle_phase') {
+    battleState.wsControlled = true;
+    if (battleState.localCountdownInterval) { clearInterval(battleState.localCountdownInterval); battleState.localCountdownInterval = null; }
+    if (data.phase === 'waiting') {
+      resetBattle();
+    } else if (data.phase === 'countdown') {
+      battleState.phase = 'countdown';
+      battleState.countdown = data.countdown || 40;
+      if (battleCtx) updateBattleUI();
+    } else if (data.phase === 'spinning') {
+      battleState.phase = 'spinning';
+      if (battleCtx) updateBattleUI();
+    }
+  }
+
+  if (type === 'battle_spin') {
+    battleState.wsControlled = true;
+    if (battleState.localCountdownInterval) { clearInterval(battleState.localCountdownInterval); battleState.localCountdownInterval = null; }
+    battleState.phase = 'spinning';
+    if (battleCtx) updateBattleUI();
+    const bWinner = battleState.players.find(p => p.id === data.winner_id) || battleState.players[0];
+    if (bWinner && battleCtx) doBattleSpinAnimation(bWinner);
+  }
+
+  if (type === 'battle_result') {
+    battleState.wsControlled = true;
+    battleState.wsResultReceived = true;
+    if (data.balance !== undefined) { state.balance = data.balance; updateBalanceDisplay(); updateGameBalance('battle'); }
+    const bIsMe = data.winner_id === state.userId;
+    const bWinnerPlayer = battleState.players.find(p => p.id === data.winner_id);
+    if (bIsMe && data.payout) {
+      showResult(true, '🏆', 'Вы победили!', '+' + Math.floor(data.payout) + '₽');
+      playSound('win_big');
+    } else if (bWinnerPlayer) {
+      showResult(false, '💔', 'Победил ' + _esc(bWinnerPlayer.name), '');
+      playSound('lose');
+    }
+    battleState.phase = 'result';
+    if (battleCtx) updateBattleUI();
+    setTimeout(() => resetBattle(), 4000);
+  }
 }
 
 function renderCrashBets(bets) {
@@ -3699,6 +4002,10 @@ function openGame(game) {
     crashInited = true;
     startCrashGame();
   }
+  if (game === 'battle' && !battleInited) {
+    battleInited = true;
+    initBattleCanvas();
+  }
 }
 
 function closeGame() {
@@ -3718,7 +4025,7 @@ function updateBalanceDisplay() {
   const _pw = document.getElementById('pTotalWins'); if (_pw) _pw.textContent = state.stats.total_wins || 0;
   const _pl = document.getElementById('pTotalLosses'); if (_pl) _pl.textContent = state.stats.total_losses || 0;
   const _pg = document.getElementById('pWagered'); if (_pg) _pg.textContent = fmt(state.stats.total_wagered || 0) + '₽';
-  ['slots','dice','coin','plinko','mines','crash','wheel'].forEach(g => {
+  ['slots','dice','coin','plinko','mines','crash','wheel','battle'].forEach(g => {
     const el = document.getElementById(g + 'Balance');
     if (el) el.textContent = fmt(state.balance) + '₽';
   });
@@ -6357,6 +6664,475 @@ function onBonusSpinEnd(prizeIdx, targetSlot) {
 // Init daily bonus status on load
 document.addEventListener('DOMContentLoaded', updateDailyBonusStatus);
 setTimeout(updateDailyBonusStatus, 500);
+
+// ══════════════════════════════════
+// ════ BATTLE (КОРОЛЕВСКАЯ БИТВА) ════
+// ══════════════════════════════════
+const BATTLE_COLORS = [
+  '#FF6B6B','#4ECDC4','#45B7D1','#FFD166','#06D6A0',
+  '#EF476F','#3a8fff','#FF9F1C','#A663CC','#2EC4B6',
+  '#E76F51','#5FAD56','#F7B731','#FC5C65','#45AAB8',
+];
+
+let battleState = {
+  phase: 'waiting',
+  players: [],
+  totalBank: 0,
+  countdown: 40,
+  myBet: 0,
+  myPlaced: false,
+  animating: false,
+  localCountdownInterval: null,
+  wsControlled: false,
+  wsResultReceived: false,
+  angle: 0,
+};
+
+let battleCanvas, battleCtx;
+let battleInited = false;
+let _battleFakeTimer = null;
+
+function initBattleCanvas() {
+  battleCanvas = document.getElementById('battleCanvas');
+  if (!battleCanvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const SIZE = 240;
+  battleCanvas.width  = SIZE * dpr;
+  battleCanvas.height = SIZE * dpr;
+  battleCtx = battleCanvas.getContext('2d');
+  battleCtx.scale(dpr, dpr);
+  drawBattleWheel(0);
+  updateBattleUI();
+  _startBattleFakePlayers();
+  wsSend({ action: 'battle_join' });
+}
+
+function drawBattleWheel(angle) {
+  if (!battleCtx) return;
+  const W = 240, cx = W/2, cy = W/2, R = 110;
+  battleCtx.clearRect(0, 0, W, W);
+
+  // Фоновый круг
+  battleCtx.beginPath();
+  battleCtx.arc(cx, cy, R + 6, 0, Math.PI * 2);
+  battleCtx.fillStyle = '#08101e';
+  battleCtx.fill();
+
+  const players = battleState.players;
+  const total = battleState.totalBank;
+
+  if (!players.length || total <= 0) {
+    // Пустое колесо
+    battleCtx.beginPath();
+    battleCtx.arc(cx, cy, R, 0, Math.PI * 2);
+    battleCtx.fillStyle = 'rgba(255,255,255,0.04)';
+    battleCtx.fill();
+    battleCtx.font = '32px sans-serif';
+    battleCtx.textAlign = 'center';
+    battleCtx.textBaseline = 'middle';
+    battleCtx.fillText('⚔️', cx, cy - 12);
+    battleCtx.font = '11px "Segoe UI",sans-serif';
+    battleCtx.fillStyle = 'rgba(255,255,255,0.18)';
+    battleCtx.fillText('Ожидание', cx, cy + 16);
+  } else {
+    // Пропорциональные секторы
+    let startAngle = angle - Math.PI / 2;
+    players.forEach(player => {
+      const frac = player.bet / total;
+      const segAngle = frac * Math.PI * 2;
+      const endAngle = startAngle + segAngle;
+      const midAngle = startAngle + segAngle / 2;
+
+      battleCtx.beginPath();
+      battleCtx.moveTo(cx, cy);
+      battleCtx.arc(cx, cy, R, startAngle, endAngle);
+      battleCtx.closePath();
+      battleCtx.fillStyle = player.color;
+      battleCtx.fill();
+
+      // Блик
+      const gx1 = cx + Math.cos(midAngle) * R * 0.15;
+      const gy1 = cy + Math.sin(midAngle) * R * 0.15;
+      const gx2 = cx + Math.cos(midAngle) * R * 0.75;
+      const gy2 = cy + Math.sin(midAngle) * R * 0.75;
+      const hg = battleCtx.createLinearGradient(gx1, gy1, gx2, gy2);
+      hg.addColorStop(0, 'rgba(255,255,255,0.2)');
+      hg.addColorStop(1, 'rgba(0,0,0,0)');
+      battleCtx.beginPath();
+      battleCtx.moveTo(cx, cy);
+      battleCtx.arc(cx, cy, R, startAngle, endAngle);
+      battleCtx.closePath();
+      battleCtx.fillStyle = hg;
+      battleCtx.fill();
+
+      // Разделитель
+      battleCtx.beginPath();
+      battleCtx.moveTo(cx, cy);
+      battleCtx.lineTo(cx + Math.cos(startAngle) * R, cy + Math.sin(startAngle) * R);
+      battleCtx.strokeStyle = 'rgba(0,0,0,0.55)';
+      battleCtx.lineWidth = 1.5;
+      battleCtx.stroke();
+
+      // Аватар и процент в секторе
+      if (frac > 0.06) {
+        const lx = cx + Math.cos(midAngle) * (R * 0.65);
+        const ly = cy + Math.sin(midAngle) * (R * 0.65);
+        battleCtx.save();
+        battleCtx.translate(lx, ly);
+        battleCtx.rotate(midAngle + Math.PI / 2);
+        battleCtx.textAlign = 'center';
+        battleCtx.textBaseline = 'middle';
+        battleCtx.font = '13px sans-serif';
+        battleCtx.fillStyle = 'rgba(0,0,0,0.4)';
+        battleCtx.fillText(player.avatar || '👤', 1, 1);
+        battleCtx.fillStyle = '#fff';
+        battleCtx.fillText(player.avatar || '👤', 0, 0);
+        if (frac > 0.1) {
+          battleCtx.font = 'bold 9px "Segoe UI",sans-serif';
+          battleCtx.fillStyle = 'rgba(255,255,255,0.9)';
+          battleCtx.fillText(Math.round(frac * 100) + '%', 0, 14);
+        }
+        battleCtx.restore();
+      }
+
+      // Золотая рамка для "меня"
+      if (player.isMe) {
+        battleCtx.beginPath();
+        battleCtx.moveTo(cx, cy);
+        battleCtx.arc(cx, cy, R - 2, startAngle, endAngle);
+        battleCtx.closePath();
+        battleCtx.strokeStyle = 'rgba(255,215,0,0.7)';
+        battleCtx.lineWidth = 3;
+        battleCtx.stroke();
+      }
+
+      startAngle = endAngle;
+    });
+  }
+
+  // Внешнее кольцо
+  battleCtx.beginPath();
+  battleCtx.arc(cx, cy, R, 0, Math.PI * 2);
+  battleCtx.strokeStyle = 'rgba(255,215,0,0.6)';
+  battleCtx.lineWidth = 2;
+  battleCtx.stroke();
+
+  // Хаб
+  battleCtx.beginPath();
+  battleCtx.arc(cx, cy, 24, 0, Math.PI * 2);
+  battleCtx.fillStyle = 'rgba(0,0,0,0.6)';
+  battleCtx.fill();
+  const hubG = battleCtx.createRadialGradient(cx-4, cy-4, 2, cx, cy, 20);
+  hubG.addColorStop(0, '#3a4a7a');
+  hubG.addColorStop(1, '#0d1422');
+  battleCtx.beginPath();
+  battleCtx.arc(cx, cy, 20, 0, Math.PI * 2);
+  battleCtx.fillStyle = hubG;
+  battleCtx.fill();
+  battleCtx.strokeStyle = 'rgba(255,215,0,0.55)';
+  battleCtx.lineWidth = 1.5;
+  battleCtx.stroke();
+  battleCtx.beginPath();
+  battleCtx.arc(cx, cy, 4, 0, Math.PI * 2);
+  battleCtx.fillStyle = '#FFD700';
+  battleCtx.fill();
+}
+
+function updateBattleUI() {
+  const phase = battleState.phase;
+  const phaseBadge  = document.getElementById('battlePhaseBadge');
+  const timerLabel  = document.getElementById('battleTimerLabel');
+  const timerDisp   = document.getElementById('battleTimerDisplay');
+  const timerFill   = document.getElementById('battleTimerFill');
+  const bankDisp    = document.getElementById('battleBankDisplay');
+  const playerCount = document.getElementById('battlePlayerCountDisplay');
+  const betBtn      = document.getElementById('battleBetBtn');
+
+  if (bankDisp)    bankDisp.textContent    = Math.floor(battleState.totalBank) + '₽';
+  if (playerCount) playerCount.textContent = battleState.players.length;
+
+  if (phase === 'waiting') {
+    const n = battleState.players.length;
+    if (phaseBadge) phaseBadge.textContent = n === 0 ? '⏳ ОЖИДАНИЕ ИГРОКОВ' : '👥 НУЖЕН ЕЩЁ ИГРОК';
+    if (timerLabel) timerLabel.textContent = 'ТАЙМЕР';
+    if (timerDisp)  timerDisp.textContent  = '—';
+    if (timerFill)  timerFill.style.width  = '0%';
+    if (betBtn) { betBtn.textContent = battleState.myPlaced ? '+ Добавить' : 'Участвовать'; betBtn.disabled = false; }
+  } else if (phase === 'countdown') {
+    if (phaseBadge) phaseBadge.textContent = '🔥 ИДЁТ НАБОР!';
+    if (timerLabel) timerLabel.textContent = 'ДО СТАРТА';
+    if (timerDisp)  timerDisp.textContent  = battleState.countdown + 'с';
+    if (timerFill)  timerFill.style.width  = (battleState.countdown / 40 * 100) + '%';
+    if (betBtn) { betBtn.textContent = battleState.myPlaced ? '+ Добавить ставку' : 'Войти в игру'; betBtn.disabled = false; }
+  } else if (phase === 'spinning') {
+    if (phaseBadge) phaseBadge.textContent = '🎡 КРУТИТСЯ!';
+    if (timerLabel) timerLabel.textContent = 'ВРАЩЕНИЕ';
+    if (timerDisp)  timerDisp.textContent  = '🎡';
+    if (timerFill)  timerFill.style.width  = '100%';
+    if (betBtn) { betBtn.disabled = true; betBtn.textContent = '🎡 Крутится...'; }
+  } else if (phase === 'result') {
+    if (phaseBadge) phaseBadge.textContent = '🏆 ПОБЕДИТЕЛЬ!';
+    if (timerLabel) timerLabel.textContent = 'РЕЗУЛЬТАТ';
+    if (timerDisp)  timerDisp.textContent  = '🏆';
+    if (betBtn) { betBtn.disabled = true; betBtn.textContent = 'Новый раунд...'; }
+  }
+
+  renderBattlePlayersList();
+  drawBattleWheel(battleState.angle);
+}
+
+function renderBattlePlayersList() {
+  const list = document.getElementById('battlePlayersList');
+  if (!list) return;
+  if (!battleState.players.length) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:#6b7fa8;font-size:13px">Ждём первого игрока...</div>';
+    return;
+  }
+  const total = battleState.totalBank;
+  list.innerHTML = [...battleState.players]
+    .sort((a, b) => b.bet - a.bet)
+    .map(p => {
+      const chance = total > 0 ? (p.bet / total * 100).toFixed(1) : '0';
+      const isMe = p.isMe;
+      return `<div class="battle-player-item" style="${isMe ? 'border-color:rgba(255,215,0,0.35);background:rgba(255,215,0,0.05)' : ''}">
+        <div class="battle-player-avatar" style="background:${p.color}30;border-color:${p.color}80">${_esc(p.avatar || '👤')}</div>
+        <div class="battle-player-info">
+          <div class="battle-player-name" style="${isMe ? 'color:var(--gold)' : ''}">${_esc(p.name)}${isMe ? ' (Вы)' : ''}</div>
+          <div class="battle-player-bet">₽ ${Math.floor(p.bet)} в банке</div>
+        </div>
+        <div class="battle-player-chance" style="color:${p.color}">${chance}%</div>
+      </div>`;
+    }).join('');
+}
+
+function updateBattleBtn() {
+  const btn = document.getElementById('battleBetBtn');
+  if (!btn || battleState.phase === 'spinning' || battleState.phase === 'result') return;
+  const amount = parseFloat(document.getElementById('battleBetInput')?.value || 0);
+  if (battleState.myPlaced) {
+    btn.textContent = amount > 0 ? '+ ' + Math.floor(amount) + '₽' : '+ Добавить';
+  } else {
+    btn.textContent = 'Участвовать';
+  }
+}
+
+function placeBattleBet() {
+  if (battleState.phase === 'spinning' || battleState.phase === 'result') return;
+  const bet = parseFloat(document.getElementById('battleBetInput')?.value || 0);
+  if (bet <= 0) { showResult(false, '⚔️', 'Введите сумму!', ''); return; }
+  if (!canBet(bet)) return;
+
+  playSound('bet');
+
+  const sent = wsSend({ action: 'battle_bet', amount: bet });
+
+  // Локальное списание (если WS отвечает — придёт баланс через battle_new_bet)
+  if (!sent) {
+    state.balance -= bet;
+    updateBalanceDisplay();
+    updateGameBalance('battle');
+  }
+
+  let myPlayer = battleState.players.find(p => p.isMe);
+  if (!myPlayer) {
+    myPlayer = {
+      id: state.userId || -999,
+      name: state.username || 'Игрок',
+      avatar: '🙂',
+      bet,
+      color: BATTLE_COLORS[battleState.players.length % BATTLE_COLORS.length],
+      isMe: true,
+    };
+    battleState.players.push(myPlayer);
+  } else {
+    myPlayer.bet += bet;
+  }
+
+  battleState.myBet = (battleState.myBet || 0) + bet;
+  battleState.myPlaced = true;
+  battleState.totalBank = battleState.players.reduce((s, p) => s + p.bet, 0);
+
+  // Если 2+ игрока и таймер ещё не запущен — стартуем (локально)
+  if (battleState.players.length >= 2 && battleState.phase === 'waiting' && !battleState.wsControlled) {
+    _startBattleCountdown();
+  }
+
+  tg?.HapticFeedback?.impactOccurred('medium');
+  updateBattleUI();
+}
+
+function _startBattleCountdown() {
+  if (battleState.localCountdownInterval) return;
+  battleState.phase = 'countdown';
+  battleState.countdown = 40;
+  updateBattleUI();
+  battleState.localCountdownInterval = setInterval(() => {
+    battleState.countdown--;
+    updateBattleUI();
+    if (battleState.countdown <= 0) {
+      clearInterval(battleState.localCountdownInterval);
+      battleState.localCountdownInterval = null;
+      _startBattleSpin();
+    }
+  }, 1000);
+}
+
+function _startBattleSpin() {
+  if (battleState.animating) return;
+  battleState.phase = 'spinning';
+  updateBattleUI();
+  if (battleState.players.length < 2) { resetBattle(); return; }
+  const winner = _chooseBattleWinner();
+  doBattleSpinAnimation(winner);
+}
+
+function _chooseBattleWinner() {
+  const total = battleState.totalBank;
+  if (!total) return battleState.players[0];
+  let r = Math.random() * total;
+  for (const p of battleState.players) {
+    r -= p.bet;
+    if (r <= 0) return p;
+  }
+  return battleState.players[battleState.players.length - 1];
+}
+
+function doBattleSpinAnimation(winner) {
+  if (!battleCtx) return;
+  battleState.animating = true;
+
+  const total = battleState.totalBank;
+  const players = battleState.players;
+
+  // Найти позицию сектора победителя
+  let cumFrac = 0;
+  let winnerStartFrac = 0;
+  let winnerFrac = 0;
+  for (const p of players) {
+    const frac = p.bet / total;
+    if (p === winner) { winnerStartFrac = cumFrac; winnerFrac = frac; break; }
+    cumFrac += frac;
+  }
+
+  // Рассчитать конечный угол так чтобы указатель попал в центр сектора
+  const TWO_PI = Math.PI * 2;
+  const targetAngle = -((winnerStartFrac + winnerFrac / 2) * TWO_PI);
+  const curMod = ((battleState.angle % TWO_PI) + TWO_PI) % TWO_PI;
+  const tgtMod = ((targetAngle % TWO_PI) + TWO_PI) % TWO_PI;
+  let diff = tgtMod - curMod;
+  if (diff <= 0) diff += TWO_PI;
+
+  const startA = battleState.angle;
+  const endA   = startA + TWO_PI * 7 + diff;
+  const dur    = 7500;
+  const t0     = Date.now();
+
+  function animate() {
+    const elapsed  = Date.now() - t0;
+    const progress = Math.min(elapsed / dur, 1);
+    const eased    = 1 - Math.pow(1 - progress, 3);
+    battleState.angle = startA + (endA - startA) * eased;
+    drawBattleWheel(battleState.angle);
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      battleState.angle = endA;
+      drawBattleWheel(battleState.angle);
+      battleState.animating = false;
+      _onBattleResult(winner);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function _onBattleResult(winner) {
+  battleState.phase = 'result';
+
+  if (!battleState.wsResultReceived) {
+    const bank   = battleState.totalBank;
+    const payout = Math.floor(bank * 0.95);
+    if (winner.isMe) {
+      state.balance += payout;
+      updateBalanceDisplay();
+      updateGameBalance('battle');
+      showResult(true, '🏆', 'Вы победили!', '+' + payout + '₽');
+      playSound('win_big');
+      tg?.HapticFeedback?.notificationOccurred('success');
+    } else {
+      showResult(false, '💔', 'Победил ' + _esc(winner.name), '');
+      playSound('lose');
+    }
+  }
+
+  updateBattleUI();
+  setTimeout(() => resetBattle(), 4000);
+}
+
+function resetBattle() {
+  if (battleState.localCountdownInterval) {
+    clearInterval(battleState.localCountdownInterval);
+    battleState.localCountdownInterval = null;
+  }
+  if (_battleFakeTimer) { clearTimeout(_battleFakeTimer); _battleFakeTimer = null; }
+  battleState.phase            = 'waiting';
+  battleState.players          = [];
+  battleState.totalBank        = 0;
+  battleState.myBet            = 0;
+  battleState.myPlaced         = false;
+  battleState.countdown        = 40;
+  battleState.wsResultReceived = false;
+  battleState.angle            = 0;
+  if (battleCtx) updateBattleUI();
+  setTimeout(() => _startBattleFakePlayers(), 2500);
+}
+
+// Фейковые игроки для реализма (когда нет реальных)
+const _BATTLE_FAKE_NAMES  = ['Sigma99','XenBolt','KryoArc','DimaVIP','Maximus','SashaPro','RomaGG','IvanKing','Kolya777','TemaX','VladXD','NikitaWin'];
+const _BATTLE_FAKE_AVATS  = ['🐱','🐶','🦊','🐼','🦁','🐯','🐻','🐸','🦅','🦋','🐨','🐰'];
+const _BATTLE_FAKE_AMTS   = [10, 25, 50, 100, 200];
+
+function _startBattleFakePlayers() {
+  if (_battleFakeTimer) clearTimeout(_battleFakeTimer);
+
+  function addFake() {
+    if (battleState.phase === 'spinning' || battleState.phase === 'result') return;
+    if (battleState.wsControlled) return;
+    if (battleState.players.length >= 7) return;
+
+    const idx    = Math.floor(Math.random() * _BATTLE_FAKE_NAMES.length);
+    const name   = _BATTLE_FAKE_NAMES[idx];
+    const avatar = _BATTLE_FAKE_AVATS[idx % _BATTLE_FAKE_AVATS.length];
+    const amount = _BATTLE_FAKE_AMTS[Math.floor(Math.random() * _BATTLE_FAKE_AMTS.length)];
+
+    const existing = battleState.players.find(p => p.name === name);
+    if (existing && battleState.phase === 'countdown') {
+      // Существующий добавляет к ставке
+      existing.bet += amount;
+    } else if (!existing) {
+      battleState.players.push({
+        id: -(idx + 1),
+        name, avatar, bet: amount,
+        color: BATTLE_COLORS[battleState.players.length % BATTLE_COLORS.length],
+        isMe: false,
+      });
+    }
+
+    battleState.totalBank = battleState.players.reduce((s, p) => s + p.bet, 0);
+
+    // Старт таймера при 2+ игроках
+    if (battleState.players.length >= 2 && battleState.phase === 'waiting') {
+      _startBattleCountdown();
+    }
+
+    if (battleCtx) updateBattleUI();
+
+    if (battleState.phase !== 'spinning' && battleState.phase !== 'result' && battleState.players.length < 6) {
+      _battleFakeTimer = setTimeout(addFake, 2000 + Math.random() * 4000);
+    }
+  }
+
+  _battleFakeTimer = setTimeout(addFake, 1800 + Math.random() * 2500);
+}
 
 function openDocModal(type) {
   const doc = _DOCS[type];
