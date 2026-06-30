@@ -4893,14 +4893,10 @@ const FAKE_USERS = ['Alex','Max','Ivan','Dima','Sasha','Roma','Kolya','Artem','A
 const FAKE_USER_SUFFIXES = ['777','Pro','King','Boss','VIP','666','x','gg','God','007','_bro','_top'];
 
 function generateCrashTarget() {
-  const r = Math.random();
   const edge = state.houseEdge / 100;
-  // Crash distribution with house edge
-  if (r < 0.33 * (1 + edge)) return 1.0 + Math.random() * 0.5; // < 1.5x often
-  if (r < 0.6) return 1.5 + Math.random() * 1.5;
-  if (r < 0.8) return 3 + Math.random() * 4;
-  if (r < 0.93) return 7 + Math.random() * 13;
-  return 20 + Math.random() * 80;
+  const r = Math.random();
+  if (r < edge) return 1.0;
+  return Math.min(parseFloat(((1 - edge) / r).toFixed(2)), 1000);
 }
 
 function startCrashGame() {
@@ -5130,57 +5126,30 @@ function placeCrashBet() {
   if (crashState.phase !== 'waiting') { showResult(false,'🚀','Подожди следующего раунда!',''); return; }
   const bet = getBet('crashBet');
   if (!canBet(bet)) return;
-  
-  const cSent = wsSend({ action: 'crash_bet', amount: bet });
+
+  if (!wsSend({ action: 'crash_bet', amount: bet })) {
+    showResult(false,'⚠️','Нет соединения с сервером','');
+    return;
+  }
+
   crashState.betAmount = bet;
   crashState.betPlaced = true;
-  if (!cSent) {
-    // WS недоступен — локальное списание
-    state.balance -= bet;
-    updateBalanceDisplay();
-    updateGameBalance('crash');
-  }
-  
   crashState.bets.unshift({ user: '👤 Вы', amount: bet, cashout: null, isMe: true });
   renderCrashBets();
-  
-  const _bb = document.getElementById('crashBetBtn');
-  if (_bb) _bb.style.display = 'none';
-  const _cb = document.getElementById('crashCashoutBtn');
-  if (crashState.phase === 'running' && _cb) _cb.style.display = '';
-  
   tg?.HapticFeedback?.impactOccurred('light');
 }
 
 function cashoutCrash() {
   if (!crashState.betPlaced || crashState.cashedOut || crashState.phase !== 'running') return;
-  const sent = wsSend({ action: 'crash_cashout' });
+  if (!wsSend({ action: 'crash_cashout' })) {
+    showResult(false,'⚠️','Нет соединения с сервером','');
+    return;
+  }
   crashState.cashedOut = true;
   crashState.cashedMult = crashState.mult;
   updateCrashBtn();
-
-  const payout = crashState.betAmount * crashState.cashedMult;
-  const net = payout - crashState.betAmount;
-
-  if (!sent) {
-    // WS недоступен — локальный кэшаут
-    state.balance += net;
-    updateBalanceDisplay();
-    updateGameBalance('crash');
-  }
-
-  state.stats.total_bets = (state.stats.total_bets||0)+1;
-  state.stats.total_wins = (state.stats.total_wins||0)+1;
-  state.stats.total_wagered = (state.stats.total_wagered||0)+crashState.betAmount;
-  state.stats.total_won = (state.stats.total_won||0)+payout;
-
-  // Update my bet entry
   const myBet = crashState.bets.find(b => b.isMe);
   if (myBet) { myBet.cashout = crashState.cashedMult; renderCrashBets(); }
-
-  const _cob = document.getElementById('crashCashoutBtn');
-  if (_cob) _cob.style.display = 'none';
-  showResult(true,'🚀', `×${crashState.cashedMult.toFixed(2)} Вылетел!`, `+${Math.floor(net)}₽`);
   tg?.HapticFeedback?.notificationOccurred('success');
 }
 
@@ -5457,15 +5426,10 @@ function placeWheelBet() {
   const color = colors[mult];
 
   // Отправить на сервер — он спишет и вернёт баланс
-  const wsSentWheel = wsSend({ action: 'wheel_bet', mult, amount: bet });
-  
-  if (!wsSentWheel) {
-    // WS недоступен — списываем локально
-    state.balance -= bet;
-    updateBalanceDisplay();
-    updateGameBalance('wheel');
+  if (!wsSend({ action: 'wheel_bet', mult, amount: bet })) {
+    showResult(false,'⚠️','Нет соединения с сервером','');
+    return;
   }
-  // Если WS ответил — balance придёт через 'bet_placed' событие
 
   wheelMyBets[mult] = (wheelMyBets[mult] || 0) + bet;
   wheelState.betPlaced = true;
