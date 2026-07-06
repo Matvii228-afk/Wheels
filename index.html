@@ -2549,7 +2549,7 @@
       <div class="battle-pointer-top"></div>
       <canvas id="battleCanvas" width="240" height="240"></canvas>
     </div>
-    <div class="battle-phase-badge" id="battlePhaseBadge">⏳ ОЖИДАНИЕ ИГРОКОВ</div>
+    <div class="battle-phase-badge" id="battlePhaseBadge" style="display:none"></div>
   </div>
 
   <!-- Банк / Таймер / Игроки -->
@@ -6847,25 +6847,27 @@ function drawBattleWheel(angle) {
   battleCtx.lineWidth = 2;
   battleCtx.stroke();
 
-  // Хаб
-  battleCtx.beginPath();
-  battleCtx.arc(cx, cy, 24, 0, Math.PI * 2);
-  battleCtx.fillStyle = 'rgba(0,0,0,0.6)';
-  battleCtx.fill();
-  const hubG = battleCtx.createRadialGradient(cx-4, cy-4, 2, cx, cy, 20);
-  hubG.addColorStop(0, '#3a4a7a');
-  hubG.addColorStop(1, '#0d1422');
-  battleCtx.beginPath();
-  battleCtx.arc(cx, cy, 20, 0, Math.PI * 2);
-  battleCtx.fillStyle = hubG;
-  battleCtx.fill();
-  battleCtx.strokeStyle = 'rgba(255,215,0,0.55)';
-  battleCtx.lineWidth = 1.5;
-  battleCtx.stroke();
-  battleCtx.beginPath();
-  battleCtx.arc(cx, cy, 4, 0, Math.PI * 2);
-  battleCtx.fillStyle = '#FFD700';
-  battleCtx.fill();
+  // Хаб — только когда есть игроки
+  if (players.length > 0) {
+    battleCtx.beginPath();
+    battleCtx.arc(cx, cy, 24, 0, Math.PI * 2);
+    battleCtx.fillStyle = 'rgba(0,0,0,0.6)';
+    battleCtx.fill();
+    const hubG = battleCtx.createRadialGradient(cx-4, cy-4, 2, cx, cy, 20);
+    hubG.addColorStop(0, '#3a4a7a');
+    hubG.addColorStop(1, '#0d1422');
+    battleCtx.beginPath();
+    battleCtx.arc(cx, cy, 20, 0, Math.PI * 2);
+    battleCtx.fillStyle = hubG;
+    battleCtx.fill();
+    battleCtx.strokeStyle = 'rgba(255,215,0,0.55)';
+    battleCtx.lineWidth = 1.5;
+    battleCtx.stroke();
+    battleCtx.beginPath();
+    battleCtx.arc(cx, cy, 4, 0, Math.PI * 2);
+    battleCtx.fillStyle = '#FFD700';
+    battleCtx.fill();
+  }
 }
 
 function updateBattleUI() {
@@ -6883,25 +6885,32 @@ function updateBattleUI() {
 
   if (phase === 'waiting') {
     const n = battleState.players.length;
-    if (phaseBadge) phaseBadge.textContent = n === 0 ? '⏳ ОЖИДАНИЕ ИГРОКОВ' : '👥 НУЖЕН ЕЩЁ ИГРОК';
+    if (phaseBadge) {
+      if (n === 0) {
+        phaseBadge.style.display = 'none';
+      } else {
+        phaseBadge.style.display = '';
+        phaseBadge.textContent = '👥 НУЖЕН ЕЩЁ ИГРОК';
+      }
+    }
     if (timerLabel) timerLabel.textContent = 'ТАЙМЕР';
     if (timerDisp)  timerDisp.textContent  = '—';
     if (timerFill)  timerFill.style.width  = '0%';
     if (betBtn) { betBtn.textContent = battleState.myPlaced ? '+ Добавить' : 'Участвовать'; betBtn.disabled = false; }
   } else if (phase === 'countdown') {
-    if (phaseBadge) phaseBadge.textContent = '🔥 ИДЁТ НАБОР!';
+    if (phaseBadge) { phaseBadge.style.display = ''; phaseBadge.textContent = '🔥 ИДЁТ НАБОР!'; }
     if (timerLabel) timerLabel.textContent = 'ДО СТАРТА';
     if (timerDisp)  timerDisp.textContent  = battleState.countdown + 'с';
     if (timerFill)  timerFill.style.width  = (battleState.countdown / 40 * 100) + '%';
     if (betBtn) { betBtn.textContent = battleState.myPlaced ? '+ Добавить ставку' : 'Войти в игру'; betBtn.disabled = false; }
   } else if (phase === 'spinning') {
-    if (phaseBadge) phaseBadge.textContent = '🎡 КРУТИТСЯ!';
+    if (phaseBadge) { phaseBadge.style.display = ''; phaseBadge.textContent = '🎡 КРУТИТСЯ!'; }
     if (timerLabel) timerLabel.textContent = 'ВРАЩЕНИЕ';
     if (timerDisp)  timerDisp.textContent  = '🎡';
     if (timerFill)  timerFill.style.width  = '100%';
     if (betBtn) { betBtn.disabled = true; betBtn.textContent = '🎡 Крутится...'; }
   } else if (phase === 'result') {
-    if (phaseBadge) phaseBadge.textContent = '🏆 ПОБЕДИТЕЛЬ!';
+    if (phaseBadge) { phaseBadge.style.display = ''; phaseBadge.textContent = '🏆 ПОБЕДИТЕЛЬ!'; }
     if (timerLabel) timerLabel.textContent = 'РЕЗУЛЬТАТ';
     if (timerDisp)  timerDisp.textContent  = '🏆';
     if (betBtn) { betBtn.disabled = true; betBtn.textContent = 'Новый раунд...'; }
