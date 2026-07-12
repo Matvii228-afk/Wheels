@@ -2817,9 +2817,11 @@
       <div style="background:rgba(255,215,0,.08);border:1px solid var(--gold);border-radius:14px;padding:16px;margin-bottom:14px;text-align:center">
         <div style="font-size:12px;color:var(--muted)">К оплате</div>
         <div style="font-size:26px;font-weight:900;color:var(--gold)" id="depositChargeAmt">— ₽</div>
-        <div style="font-size:12px;color:var(--muted)" id="depositCreditNote">зачислится — ₽</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px" id="depositUsdtAmt">≈ — USDT</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px" id="depositCreditNote">зачислится — ₽</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;opacity:.7">Можно оплатить TON, USDT, BTC и другими монетами</div>
       </div>
-      <button id="depositPayBtn" onclick="" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:10px">🔗 Открыть CryptoBot</button>
+      <button id="depositPayBtn" onclick="" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:10px">🚀 Оплатить через xRocket</button>
       <button onclick="checkDeposit()" style="width:100%;padding:14px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;font-weight:700;cursor:pointer">✅ Я оплатил — проверить</button>
     </div>
     <button onclick="closeDepositModal()" style="width:100%;padding:12px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13px;cursor:pointer;margin-top:8px">Отмена</button>
@@ -3501,6 +3503,8 @@ function handleWSMessage(data) {
     document.getElementById('depositStep2').style.display = '';
     document.getElementById('depositChargeAmt').textContent = Math.ceil(data.amount_charge) + ' ₽';
     document.getElementById('depositCreditNote').textContent = 'зачислится ' + Math.floor(data.amount_rub) + ' ₽';
+    const usdtEl = document.getElementById('depositUsdtAmt');
+    if (usdtEl) usdtEl.textContent = data.amount_usdt ? '≈ ' + data.amount_usdt.toFixed(2) + ' USDT' : '';
     const btn = document.getElementById('depositPayBtn');
     btn.onclick = () => tg ? tg.openLink(data.pay_url) : window.open(data.pay_url, '_blank');
   }
@@ -5840,7 +5844,7 @@ function selectDepositMethod(method) {
   if (method !== 'crypto') return;
   document.getElementById('depositStep0').style.display = 'none';
   document.getElementById('depositStep1').style.display = '';
-  document.getElementById('depositSubtitle').textContent = 'Оплата через @CryptoBot';
+  document.getElementById('depositSubtitle').textContent = 'Оплата через @xRocket';
 }
 function closeDepositModal() {
   document.getElementById('depositModal').style.display = 'none';
