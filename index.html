@@ -3097,7 +3097,7 @@ function initApp() {
   try { loadRefData(); } catch(e) {}
   try {
     const refEl = document.getElementById('refLink');
-    if (refEl) refEl.textContent = `https://t.me/YourBot?start=ref${state.userId}`;
+    if (refEl) refEl.textContent = _botUsername ? `https://t.me/${_botUsername}?start=ref${state.userId}` : '';
     const pn = document.getElementById('profileName');
     if (pn) pn.textContent = state.username;
     const pi = document.getElementById('profileId');
@@ -3366,6 +3366,9 @@ function handleWSMessage(data) {
     }
     if (data.community_link != null) {
       _communityLink = data.community_link;
+    }
+    if (data.bot_username != null) {
+      _botUsername = data.bot_username;
     }
     wsSend({ action: 'get_tasks' });
   }
@@ -5609,7 +5612,7 @@ let refData = {
 };
 
 function getRefLink() {
-  return `https://t.me/YourBot?start=ref${state.userId}`;
+  return _botUsername ? `https://t.me/${_botUsername}?start=ref${state.userId}` : '';
 }
 
 function copyRefLink() {
@@ -5994,6 +5997,7 @@ let _supportUsername = '';
 let _collaborationUsername = '';
 let _chatUsersLink = '';
 let _communityLink = '';
+let _botUsername = '';
 
 function openSupport() {
   if (!_supportUsername) {
