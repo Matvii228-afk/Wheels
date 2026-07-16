@@ -3541,6 +3541,7 @@ function handleWSMessage(data) {
     updateBalanceDisplay();
     closeWithdrawModal();
     if (data.pending) {
+      wsSend({ action: 'get_transactions' });
       showResult(true, '⏳', 'На обработке!', Math.floor(data.amount) + '₽ — ожидает подтверждения администратора');
     } else {
       showResult(true, '💸', 'Вывод выполнен!', Math.floor(data.amount) + '₽ отправлено в крипте');
@@ -5900,7 +5901,9 @@ function submitWithdraw() {
   const amount = parseFloat(document.getElementById('withdrawAmount').value);
   const min = depositInfo.min_withdraw;
   if (!amount || amount < min) { showToast(`Минимальный вывод ${min}₽`); return; }
-  wsSend({ action: 'withdraw_request', amount });
+  if (!wsSend({ action: 'withdraw_request', amount })) {
+    showToast('Нет соединения с сервером — перезапусти приложение');
+  }
 }
 
 // ══════════════════════════════════
@@ -6106,10 +6109,11 @@ function renderTransactions(txs) {
       amtStr = '+' + Math.round(tx.amount || 0) + '₽';
       color = 'var(--green)';
     } else {
-      icon = '💸';
-      title = 'Вывод';
+      icon = tx.status === 'completed' ? '✅' : tx.status === 'rejected' ? '❌' : '⏳';
+      const statusLabel = tx.status === 'completed' ? 'Выплачено' : tx.status === 'rejected' ? 'Отклонено' : 'В рассмотрении';
+      title = 'Вывод · ' + statusLabel;
       amtStr = '-' + Math.round(tx.amount || 0) + '₽';
-      color = 'var(--red)';
+      color = tx.status === 'completed' ? 'var(--green)' : tx.status === 'rejected' ? 'var(--muted)' : 'var(--red)';
     }
     const rawDate = tx.created_at ? String(tx.created_at).replace(/[^0-9T:\-]/g, '').slice(0, 16).replace('T', ' ') : '';
     return `<div style="display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border)">
