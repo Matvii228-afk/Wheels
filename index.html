@@ -3776,9 +3776,9 @@ function handleWSMessage(data) {
 function _crashBetRow(label, amount, cashout, crashed) {
   let statusHtml;
   if (crashed) {
-    statusHtml = `<span style="color:var(--red);font-weight:800;font-size:12px">💥</span>`;
+    statusHtml = `<span style="color:var(--red);font-weight:800;font-size:12px">LOSE</span>`;
   } else if (cashout) {
-    statusHtml = `<span style="color:var(--green);font-weight:800;font-size:12px">×${parseFloat(cashout).toFixed(2)}</span>`;
+    statusHtml = `<span style="color:var(--green);font-weight:800;font-size:12px">✅ ×${parseFloat(cashout).toFixed(2)}</span>`;
   } else {
     statusHtml = `<span style="color:#6b7fa8;font-size:11px">в игре</span>`;
   }
