@@ -3386,15 +3386,20 @@ function handleWSMessage(data) {
   }
 
   if (type === 'daily_bonus_ok') {
-    // Server persisted the bonus; trust server balance
+    // Сервер выбрал приз — запускаем анимацию с prize_idx от сервера
     if (data.balance !== undefined) { state.balance = data.balance; updateBalanceDisplay(); }
+    const prizeIdx = (data.prize_idx !== undefined) ? data.prize_idx : 0;
+    _runBonusAnimation(prizeIdx);
   }
 
   if (type === 'daily_bonus_error') {
-    // Server rejected (duplicate spin within 24h on server side) — roll back local credit
+    bonusSpinning = false;
+    const spinBtn = document.getElementById('bonusSpinBtn');
     if (data.balance !== undefined) { state.balance = data.balance; updateBalanceDisplay(); }
     const resultEl = document.getElementById('bonusResultBlock');
     if (resultEl) resultEl.innerHTML = `<div style="color:var(--red);font-size:13px">${_esc(data.message || 'Уже получен сегодня')}</div>`;
+    updateDailyBonusStatus();
+    if (spinBtn) { spinBtn.disabled = false; }
   }
 
   if (type === 'bet_placed') {
@@ -5745,16 +5750,17 @@ function renderTasks() {
     list.innerHTML = `<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">Заданий пока нет</div>`;
     return;
   }
-  const REQ_ICONS = { subscribe: '📢', invite: '👥', none: '🎁' };
+  const REQ_ICONS = { subscribe: '📢', join_group: '👥', invite: '🤝', none: '🎁' };
   list.innerHTML = visibleTasks.map(t => {
     const icon = REQ_ICONS[t.requirement_type] || '🎯';
-    const isSubscribe = t.requirement_type === 'subscribe';
+    const needsLink = t.requirement_type === 'subscribe' || t.requirement_type === 'join_group';
     const pending = taskPending.has(t.id);
+    const btnLabel = t.requirement_type === 'join_group' ? '👥 Вступить' : '📢 Перейти';
 
     let actionBtn = '';
-    if (isSubscribe && !pending) {
-      actionBtn = `<button onclick="doTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-size:12px;font-weight:900;cursor:pointer">📢 Перейти</button>`;
-    } else if (isSubscribe && pending) {
+    if (needsLink && !pending) {
+      actionBtn = `<button onclick="doTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-size:12px;font-weight:900;cursor:pointer">${btnLabel}</button>`;
+    } else if (needsLink && pending) {
       actionBtn = `<button onclick="checkTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:12px;font-weight:900;cursor:pointer">✅ Проверить</button>`;
     } else {
       actionBtn = `<button onclick="doTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:12px;font-weight:900;cursor:pointer">Забрать</button>`;
@@ -5777,7 +5783,7 @@ function renderTasks() {
 
 function doTask(id) {
   const task = tasksData.tasks.find(t => t.id === id);
-  if (task && task.requirement_type === 'subscribe' && task.requirement_value) {
+  if (task && (task.requirement_type === 'subscribe' || task.requirement_type === 'join_group') && task.requirement_value) {
     const channel = task.requirement_value.startsWith('@') ? task.requirement_value : '@' + task.requirement_value;
     tg.openLink('https://t.me/' + channel.replace('@', ''));
     taskPending.add(id);
@@ -6592,36 +6598,39 @@ function closeDailyBonusModal() {
 function spinBonusWheel() {
   if (bonusSpinning) return;
   if (!canSpinBonus()) return;
+  bonusSpinning = true;
+  const spinBtn = document.getElementById('bonusSpinBtn');
+  if (spinBtn) { spinBtn.disabled = true; spinBtn.textContent = '...'; }
+  // Сервер выбирает приз — отправляем запрос без amount
+  if (!wsSend({ action: 'daily_bonus' })) {
+    bonusSpinning = false;
+    if (spinBtn) { spinBtn.disabled = false; spinBtn.textContent = 'КРУТИТЬ!'; }
+    showToast('Нет соединения');
+  }
+  // Анимация запустится в daily_bonus_ok / daily_bonus_error обработчике
+}
 
-  const prizeIdx = pickBonusPrize();
-
-  // Find a slot matching prizeIdx in the STRIP_N_REPEATS-3 repetition
+function _runBonusAnimation(prizeIdx) {
   const startRep = STRIP_N_REPEATS - 3;
   let targetSlot = startRep * 9;
   for (let i = startRep * 9; i < (startRep + 1) * 9; i++) {
     if (bonusStripItems[i] === prizeIdx) { targetSlot = i; break; }
   }
 
-  const maskEl   = document.querySelector('.bonus-strip-mask');
+  const maskEl    = document.querySelector('.bonus-strip-mask');
   const maskWidth = maskEl ? maskEl.offsetWidth : 300;
-  const cx       = maskWidth / 2;
+  const cx        = maskWidth / 2;
   const itemCenter = targetSlot * STRIP_SLOT + 39;
-  const finalTx  = cx - itemCenter;
-
-  bonusSpinning = true;
-  const spinBtn = document.getElementById('bonusSpinBtn');
-  if (spinBtn) { spinBtn.disabled = true; spinBtn.textContent = '...'; }
+  const finalTx   = cx - itemCenter;
+  const strip     = document.getElementById('bonusStrip');
+  const startTx   = bonusStripTx;
+  const totalMove = finalTx - startTx;
+  const duration  = 4500;
+  const startTime = performance.now();
 
   playSound('daily_spin');
 
-  const strip    = document.getElementById('bonusStrip');
-  const startTx  = bonusStripTx;
-  const totalMove = finalTx - startTx;
-  const duration = 4500;
-  const startTime = performance.now();
-
-  function easeOut(t) { return 1 - Math.pow(1-t, 4); }
-
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
   let lastTickIdx = -1;
 
   function animate(now) {
@@ -6630,13 +6639,8 @@ function spinBonusWheel() {
     const curTx   = startTx + totalMove * easeOut(t);
     bonusStripTx  = curTx;
     if (strip) strip.style.transform = `translateX(${curTx}px)`;
-
     const curIdx = Math.round((cx - curTx - 39) / STRIP_SLOT);
-    if (curIdx !== lastTickIdx) {
-      lastTickIdx = curIdx;
-      playTone(260 + Math.random() * 80, 'sine', 0.035, 0.05);
-    }
-
+    if (curIdx !== lastTickIdx) { lastTickIdx = curIdx; playTone(260 + Math.random() * 80, 'sine', 0.035, 0.05); }
     if (t < 1) {
       requestAnimationFrame(animate);
     } else {
@@ -6644,7 +6648,6 @@ function spinBonusWheel() {
       onBonusSpinEnd(prizeIdx, targetSlot);
     }
   }
-
   requestAnimationFrame(animate);
 }
 
@@ -6659,7 +6662,7 @@ function onBonusSpinEnd(prizeIdx, targetSlot) {
     if (cells[targetSlot]) cells[targetSlot].classList.add('bonus-strip-winner');
   }
 
-  // Do NOT credit balance locally — wait for server's daily_bonus_ok to set authoritative balance
+  // Баланс уже зачислен сервером до анимации — здесь только визуал
   const isRare = prize.value >= 7;
   playSound(isRare ? 'daily_win_rare' : 'daily_win_common');
   if (tg) tg.HapticFeedback?.notificationOccurred('success');
@@ -6670,9 +6673,6 @@ function onBonusSpinEnd(prizeIdx, targetSlot) {
   }
 
   updateDailyBonusStatus();
-
-  // Tell server to persist and credit; response: daily_bonus_ok | daily_bonus_error
-  wsSend({ action: 'daily_bonus', amount: prize.value, prize_label: prize.label });
 }
 
 // Init daily bonus status on load
