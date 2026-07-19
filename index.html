@@ -3433,6 +3433,7 @@ function handleWSMessage(data) {
   if (type === 'tasks_data') {
     tasksData.tasks = data.tasks || [];
     tasksData.completed = data.completed || [];
+    tasksData.daily_statuses = data.daily_statuses || {};
     renderTasks();
   }
 
@@ -3446,6 +3447,18 @@ function handleWSMessage(data) {
 
   if (type === 'task_fail') {
     showResult(false, '⚠️', data.msg, '');
+  }
+
+  if (type === 'daily_task_requested') {
+    tasksData.daily_statuses[data.task_id] = 'pending';
+    showResult(true, '📲', 'Инструкция отправлена в чат!', 'Проверим в течение 24 часов');
+    renderTasks();
+  }
+
+  if (type === 'daily_task_fail') {
+    taskPending.delete(data.task_id);
+    showResult(false, '⚠️', data.msg || 'Ошибка', '');
+    renderTasks();
   }
 
   if (type === 'transactions_data') {
@@ -5735,7 +5748,7 @@ function onRefDeposit(refUserId, refName, depositAmount) {
 // ══════════════════════════════════
 // TASKS
 // ══════════════════════════════════
-let tasksData = { tasks: [], completed: [] };
+let tasksData = { tasks: [], completed: [], daily_statuses: {} };
 const taskPending = new Set();
 
 function loadTasks() {
@@ -5750,15 +5763,30 @@ function renderTasks() {
     list.innerHTML = `<div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">Заданий пока нет</div>`;
     return;
   }
-  const REQ_ICONS = { subscribe: '📢', join_group: '👥', invite: '🤝', none: '🎁' };
+  const REQ_ICONS = { subscribe: '📢', join_group: '👥', invite: '🤝', none: '🎁', add_to_name: '📛', set_avatar: '🖼' };
   list.innerHTML = visibleTasks.map(t => {
     const icon = REQ_ICONS[t.requirement_type] || '🎯';
+    const isDaily = t.requirement_type === 'add_to_name' || t.requirement_type === 'set_avatar';
     const needsLink = t.requirement_type === 'subscribe' || t.requirement_type === 'join_group';
     const pending = taskPending.has(t.id);
+    const dailyStatus = tasksData.daily_statuses[t.id];
     const btnLabel = t.requirement_type === 'join_group' ? '👥 Вступить' : '📢 Перейти';
 
     let actionBtn = '';
-    if (needsLink && !pending) {
+    let extraDesc = '';
+
+    if (isDaily) {
+      if (dailyStatus === 'active') {
+        actionBtn = `<div style="margin-top:4px;padding:4px 10px;border-radius:8px;background:rgba(0,232,122,0.15);color:var(--green);font-size:11px;font-weight:700">✅ Активно</div>`;
+        extraDesc = `<div style="font-size:10px;color:var(--green);margin-top:2px">Ежедневная выплата идёт</div>`;
+      } else if (dailyStatus === 'pending' || pending) {
+        actionBtn = `<div style="margin-top:4px;padding:4px 10px;border-radius:8px;background:rgba(255,165,0,0.15);color:var(--gold);font-size:11px;font-weight:700">⏳ Ожидание проверки</div>`;
+        extraDesc = `<div style="font-size:10px;color:var(--muted);margin-top:2px">Проверяем в течение 24 часов</div>`;
+      } else {
+        actionBtn = `<button onclick="doTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:12px;font-weight:900;cursor:pointer">📲 Получить инструкцию</button>`;
+        extraDesc = `<div style="font-size:10px;color:var(--muted);margin-top:2px">Ежедневно</div>`;
+      }
+    } else if (needsLink && !pending) {
       actionBtn = `<button onclick="doTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-size:12px;font-weight:900;cursor:pointer">${btnLabel}</button>`;
     } else if (needsLink && pending) {
       actionBtn = `<button onclick="checkTask(${t.id})" style="margin-top:4px;padding:5px 12px;border-radius:8px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:12px;font-weight:900;cursor:pointer">✅ Проверить</button>`;
@@ -5772,6 +5800,7 @@ function renderTasks() {
       <div style="flex:1;min-width:0">
         <div style="font-size:14px;font-weight:700">${_esc(t.title)}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:2px">${_esc(t.description||'')}</div>
+        ${extraDesc}
       </div>
       <div style="text-align:right;flex-shrink:0">
         <div style="font-size:15px;font-weight:900;color:var(--gold)">+${parseFloat(t.reward_amount)||0}₽</div>
@@ -5783,7 +5812,14 @@ function renderTasks() {
 
 function doTask(id) {
   const task = tasksData.tasks.find(t => t.id === id);
-  if (task && (task.requirement_type === 'subscribe' || task.requirement_type === 'join_group') && task.requirement_value) {
+  if (!task) return;
+  if (task.requirement_type === 'add_to_name' || task.requirement_type === 'set_avatar') {
+    wsSend({ action: 'request_daily_task', task_id: id });
+    taskPending.add(id);
+    renderTasks();
+    return;
+  }
+  if ((task.requirement_type === 'subscribe' || task.requirement_type === 'join_group') && task.requirement_value) {
     const channel = task.requirement_value.startsWith('@') ? task.requirement_value : '@' + task.requirement_value;
     tg.openLink('https://t.me/' + channel.replace('@', ''));
     taskPending.add(id);
