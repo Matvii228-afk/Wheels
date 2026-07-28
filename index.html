@@ -46,6 +46,23 @@
     --glow: 0 0 24px rgba(200,130,0,0.15);
   }
 
+  /* ── STREAMER MODE COIN ── */
+  .w-coin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 900;
+    vertical-align: middle;
+    margin-left: 2px;
+    line-height: 1;
+  }
+
   /* ── BLUE THEME ── */
   [data-theme="blue"] {
     --gold: #60b8ff;
@@ -1981,7 +1998,7 @@
         <span class="balance-amount" id="balanceDisplay">0</span>
         <span class="balance-currency">₽</span>
       </div>
-      <button onclick="openDepositModal()" style="flex-shrink:0;padding:9px 18px;border-radius:12px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap">💎 Пополнить</button>
+      <button id="navDepositBtn" onclick="openDepositModal()" style="flex-shrink:0;padding:9px 18px;border-radius:12px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:13px;font-weight:800;cursor:pointer;white-space:nowrap">💎 Пополнить</button>
     </div>
   </div>
 
@@ -2702,7 +2719,7 @@
           <div id="profileBalance" style="font-size:22px;font-weight:900;color:var(--gold)">0₽</div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div id="profilePayButtons" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
         <button onclick="openDepositModal()" style="padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:13px;font-weight:800;cursor:pointer">💎 Пополнить</button>
         <button onclick="openWithdrawModal()" style="padding:11px;border-radius:12px;border:none;background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-size:13px;font-weight:800;cursor:pointer">💸 Вывод</button>
       </div>
@@ -2724,6 +2741,11 @@
         <div style="width:34px;height:34px;border-radius:9px;background:rgba(124,58,255,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0" id="soundToggleIcon">🔊</div>
         <div style="flex:1;font-size:15px;font-weight:600">Звуки игры</div>
         <div id="soundToggleBadge" style="font-size:12px;font-weight:800;padding:4px 12px;border-radius:20px;background:var(--green);color:#000;flex-shrink:0">Вкл</div>
+      </div>
+      <div onclick="toggleStreamerMode()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
+        <div id="streamerIcon" style="width:34px;height:34px;border-radius:9px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">🎥</div>
+        <div style="flex:1;font-size:15px;font-weight:600">Режим стримера</div>
+        <div id="streamerBadge" style="font-size:12px;font-weight:800;padding:4px 12px;border-radius:20px;background:var(--red);color:#fff;flex-shrink:0">Выкл</div>
       </div>
       <div onclick="openTransactionHistory()" style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid var(--border)">
         <div style="width:34px;height:34px;border-radius:9px;background:rgba(99,102,241,0.12);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📋</div>
@@ -3649,7 +3671,7 @@ function handleWSMessage(data) {
     minesState.revealed++;
     document.getElementById('minesRevealed').textContent = minesState.revealed;
     document.getElementById('minesMult').textContent = '×' + data.mult.toFixed(2);
-    document.getElementById('minesPotential').textContent = Math.floor(data.potential) + '₽';
+    document.getElementById('minesPotential').textContent = Math.floor(data.potential) + _cur();
     updateMinesBtn();
     minesGridLocked = false;
   }
@@ -4080,6 +4102,33 @@ function closeGame() {
 }
 
 // ══════════════════════════════════
+// STREAMER MODE
+// ══════════════════════════════════
+let streamerMode = localStorage.getItem('streamerMode') === '1';
+
+function _cur() { return streamerMode ? 'W' : '₽'; }
+function _cur_html() { return streamerMode ? '<span class="w-coin">W</span>' : '₽'; }
+
+function applyStreamerMode() {
+  document.querySelectorAll('.balance-currency').forEach(el => { el.innerHTML = _cur_html(); });
+  const payRow = document.getElementById('profilePayButtons');
+  if (payRow) payRow.style.display = streamerMode ? 'none' : '';
+  const navBtn = document.getElementById('navDepositBtn');
+  if (navBtn) navBtn.style.display = streamerMode ? 'none' : '';
+  const badge = document.getElementById('streamerBadge');
+  const icon  = document.getElementById('streamerIcon');
+  if (badge) { badge.textContent = streamerMode ? 'Вкл' : 'Выкл'; badge.style.background = streamerMode ? 'var(--green)' : 'var(--red)'; }
+  if (icon)  icon.textContent = streamerMode ? '🔴' : '🎥';
+  updateBalanceDisplay();
+}
+
+function toggleStreamerMode() {
+  streamerMode = !streamerMode;
+  localStorage.setItem('streamerMode', streamerMode ? '1' : '0');
+  applyStreamerMode();
+}
+
+// ══════════════════════════════════
 // BALANCE
 // ══════════════════════════════════
 function updateBalanceDisplay() {
@@ -4087,19 +4136,19 @@ function updateBalanceDisplay() {
   const bd = document.getElementById('balanceDisplay');
   if (bd) bd.textContent = fmt(state.balance);
   const pb = document.getElementById('profileBalance');
-  if (pb) pb.textContent = fmt(state.balance) + '₽';
+  if (pb) pb.textContent = fmt(state.balance) + _cur();
   const _pw = document.getElementById('pTotalWins'); if (_pw) _pw.textContent = state.stats.total_wins || 0;
   const _pl = document.getElementById('pTotalLosses'); if (_pl) _pl.textContent = state.stats.total_losses || 0;
-  const _pg = document.getElementById('pWagered'); if (_pg) _pg.textContent = fmt(state.stats.total_wagered || 0) + '₽';
+  const _pg = document.getElementById('pWagered'); if (_pg) _pg.textContent = fmt(state.stats.total_wagered || 0) + _cur();
   ['slots','dice','coin','plinko','mines','crash','wheel','battle'].forEach(g => {
     const el = document.getElementById(g + 'Balance');
-    if (el) el.textContent = fmt(state.balance) + '₽';
+    if (el) el.textContent = fmt(state.balance) + _cur();
   });
 }
 
 function updateGameBalance(game) {
   const el = document.getElementById(game + 'Balance');
-  if (el) el.textContent = Math.floor(state.balance).toLocaleString('ru') + '₽';
+  if (el) el.textContent = Math.floor(state.balance).toLocaleString('ru') + _cur();
 }
 
 // ══════════════════════════════════
@@ -4793,7 +4842,7 @@ function updateMinesBtn() {
   if (minesState.active) {
     const mult = calcMinesMult();
     const potential = (minesState.amount * mult).toFixed(0);
-    btn.textContent = `💰 ЗАБРАТЬ ${potential}₽`;
+    btn.textContent = `💰 ЗАБРАТЬ ${potential}${_cur()}`;
     btn.style.background = 'linear-gradient(135deg,#22c55e,#15803d)';
   } else {
     btn.textContent = '💣 НАЧАТЬ';
@@ -4827,7 +4876,7 @@ function initMinesGrid() {
   }
   document.getElementById('minesRevealed').textContent = '0';
   document.getElementById('minesMult').textContent = '×1.00';
-  document.getElementById('minesPotential').textContent = '0₽';
+  document.getElementById('minesPotential').textContent = '0' + _cur();
   const btn = document.getElementById('minesMainBtn');
   if (btn) btn.disabled = false;
   updateMinesBtn();
@@ -5431,6 +5480,7 @@ function updateWheelBetBtn() {
 document.addEventListener('DOMContentLoaded', () => {
   const wb = document.getElementById('wheelBet');
   if (wb) wb.addEventListener('input', updateWheelBetBtn);
+  applyStreamerMode();
 });
 
 function placeWheelBet() {
@@ -5662,7 +5712,7 @@ function updateRefClaimBtn() {
   const btn = document.getElementById('refClaimBtn');
   const amtEl = document.getElementById('refPendingAmt');
   const rb = refData.earned || 0;
-  if (amtEl) amtEl.textContent = Math.floor(rb) + '₽';
+  if (amtEl) amtEl.textContent = Math.floor(rb) + _cur();
   if (btn) {
     const canClaim = rb >= 1;
     btn.style.opacity = canClaim ? '1' : '.4';
@@ -5972,7 +6022,7 @@ function loadProfile() {
   const _pw3 = document.getElementById('pWon'); if (_pw3) _pw3.textContent = Math.floor(state.stats.total_won||0) + '₽';
   // Balance
   const pb = document.getElementById('profileBalance');
-  if (pb) pb.textContent = Math.floor(state.balance).toLocaleString('ru') + '₽';
+  if (pb) pb.textContent = Math.floor(state.balance).toLocaleString('ru') + _cur();
   // Avatar from Telegram
   const av = document.getElementById('profileAvatar');
   if (av) av.innerHTML = getTgAvatar();
@@ -7046,7 +7096,7 @@ function _updateBattleCountdownUI() {
   const phaseBadge = document.getElementById('battlePhaseBadge');
   if (timerDisp)  timerDisp.textContent = battleState.countdown + 'с';
   if (timerFill)  timerFill.style.width = (battleState.countdown / 40 * 100) + '%';
-  if (bankDisp)   bankDisp.textContent  = Math.floor(battleState.totalBank) + '₽';
+  if (bankDisp)   bankDisp.textContent  = Math.floor(battleState.totalBank) + _cur();
   if (phaseBadge) phaseBadge.textContent = '🔥 ИДЁТ НАБОР!';
 }
 
