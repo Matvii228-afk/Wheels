@@ -4111,9 +4111,9 @@ function _cur_html() { return streamerMode ? '<span class="w-coin">W</span>' : '
 
 function applyStreamerMode() {
   document.querySelectorAll('.balance-currency').forEach(el => { el.innerHTML = _cur_html(); });
-  document.querySelectorAll('.bet-currency, .battle-bet-currency, .wheel-bet-currency').forEach(el => { el.textContent = _cur(); });
+  document.querySelectorAll('.bet-currency, .battle-bet-currency, .wheel-bet-currency').forEach(el => { el.innerHTML = _cur_html(); });
   const wbc = document.getElementById('wheelBetCurrency');
-  if (wbc) wbc.textContent = _cur();
+  if (wbc) wbc.innerHTML = _cur_html();
   const payRow = document.getElementById('profilePayButtons');
   if (payRow) payRow.style.display = streamerMode ? 'none' : '';
   const navBtn = document.getElementById('navDepositBtn');
