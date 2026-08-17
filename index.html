@@ -5930,10 +5930,10 @@ let currentDepositMethod = 'cryptobot';
 function selectDepositMethod(method) {
   const cbBtn = document.getElementById('methodBtnCryptobot');
   const xrBtn = document.getElementById('methodBtnXrocket');
-  if (method === 'cryptobot' && !depositInfo.cryptobot_available) {
+  if (method === 'cryptobot' && depositInfo.cryptobot_available === false) {
     showToast('CryptoBot недоступен'); return;
   }
-  if (method === 'xrocket' && !depositInfo.xrocket_available) {
+  if (method === 'xrocket' && depositInfo.xrocket_available === false) {
     showToast('xRocket недоступен'); return;
   }
   currentDepositMethod = method;
