@@ -2803,15 +2803,15 @@
     <!-- STEP 0: выбор способа -->
     <div id="depositStep0">
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
-        <div onclick="selectDepositMethod('crypto')" style="border:2px solid rgba(99,102,241,.5);border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;background:rgba(99,102,241,.08);transition:.15s" onmouseenter="this.style.borderColor='#818cf8'" onmouseleave="this.style.borderColor='rgba(99,102,241,.5)'">
-          <div style="font-size:26px;margin-bottom:6px">₿</div>
-          <div style="font-weight:800;font-size:14px;margin-bottom:2px">Крипта</div>
+        <div id="methodBtnCryptobot" onclick="selectDepositMethod('cryptobot')" style="border:2px solid rgba(99,102,241,.5);border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;background:rgba(99,102,241,.08);transition:.15s">
+          <div style="font-size:26px;margin-bottom:6px">💎</div>
+          <div style="font-weight:800;font-size:14px;margin-bottom:2px">CryptoBot</div>
           <div style="font-size:11px;color:var(--muted)">@CryptoBot</div>
         </div>
-        <div style="border:2px solid rgba(255,255,255,.08);border-radius:16px;padding:16px 12px;text-align:center;opacity:.4;cursor:not-allowed;position:relative">
-          <div style="font-size:26px;margin-bottom:6px">💳</div>
-          <div style="font-weight:800;font-size:14px;margin-bottom:2px">Карта</div>
-          <div style="font-size:11px;color:var(--muted)">Скоро</div>
+        <div id="methodBtnXrocket" onclick="selectDepositMethod('xrocket')" style="border:2px solid rgba(255,165,0,.4);border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;background:rgba(255,165,0,.06);transition:.15s">
+          <div style="font-size:26px;margin-bottom:6px">🚀</div>
+          <div style="font-weight:800;font-size:14px;margin-bottom:2px">xRocket</div>
+          <div style="font-size:11px;color:var(--muted)">@xRocket</div>
         </div>
       </div>
     </div>
@@ -3537,6 +3537,7 @@ function handleWSMessage(data) {
     const usdtEl = document.getElementById('depositUsdtAmt');
     if (usdtEl) usdtEl.textContent = data.amount_usdt ? '≈ ' + data.amount_usdt.toFixed(2) + ' USDT' : '';
     const btn = document.getElementById('depositPayBtn');
+    btn.textContent = currentDepositMethod === 'xrocket' ? '🚀 Оплатить через xRocket' : '💎 Оплатить через CryptoBot';
     btn.onclick = () => tg ? tg.openLink(data.pay_url) : window.open(data.pay_url, '_blank');
   }
 
@@ -5887,13 +5888,19 @@ function updateDepositUI() {
   const depBtn      = document.querySelector('#depositStep1 button');
   const wdBtn       = document.querySelector('#withdrawModal button[onclick="submitWithdraw()"]');
 
+  // серые кнопки если метод недоступен
+  const cbBtn = document.getElementById('methodBtnCryptobot');
+  const xrBtn = document.getElementById('methodBtnXrocket');
+  if (cbBtn) cbBtn.style.opacity = depositInfo.cryptobot_available === false ? '0.35' : '1';
+  if (xrBtn) xrBtn.style.opacity = depositInfo.xrocket_available === false ? '0.35' : '1';
+
   // обновляем subtitle только если мы уже на шаге выбора суммы (не на шаге 0)
   const step0visible = document.getElementById('depositStep0') && document.getElementById('depositStep0').style.display !== 'none';
   if (depSubtitle && !step0visible) depSubtitle.textContent = ok
-    ? 'Оплата через @CryptoBot'
+    ? (currentDepositMethod === 'xrocket' ? 'Оплата через @xRocket' : 'Оплата через @CryptoBot')
     : '⚠️ Пополнение временно недоступно';
   if (wdSubtitle) wdSubtitle.textContent = ok
-    ? 'Вывод через @CryptoBot'
+    ? 'Вывод — ручная обработка'
     : '⚠️ Вывод временно недоступен';
   if (depInput) depInput.placeholder = ok ? `Сумма в рублях (мин. ${minDep}₽)` : 'Недоступно';
   if (depInput) depInput.disabled = !ok;
@@ -5916,11 +5923,22 @@ function openDepositModal() {
   m.style.display = 'flex';
 }
 
+let currentDepositMethod = 'cryptobot';
+
 function selectDepositMethod(method) {
-  if (method !== 'crypto') return;
+  const cbBtn = document.getElementById('methodBtnCryptobot');
+  const xrBtn = document.getElementById('methodBtnXrocket');
+  if (method === 'cryptobot' && !depositInfo.cryptobot_available) {
+    showToast('CryptoBot недоступен'); return;
+  }
+  if (method === 'xrocket' && !depositInfo.xrocket_available) {
+    showToast('xRocket недоступен'); return;
+  }
+  currentDepositMethod = method;
   document.getElementById('depositStep0').style.display = 'none';
   document.getElementById('depositStep1').style.display = '';
-  document.getElementById('depositSubtitle').textContent = 'Оплата через @CryptoBot';
+  const label = method === 'cryptobot' ? 'Оплата через @CryptoBot' : 'Оплата через @xRocket';
+  document.getElementById('depositSubtitle').textContent = label;
 }
 function closeDepositModal() {
   document.getElementById('depositModal').style.display = 'none';
@@ -5960,7 +5978,7 @@ function submitDeposit() {
   const amount = parseFloat(document.getElementById('depositAmount').value);
   const min = depositInfo.min_deposit || 100;
   if (!amount || amount < min) { showToast(`Минимальный депозит ${min}₽`); return; }
-  wsSend({ action: 'deposit_create', amount });
+  wsSend({ action: 'deposit_create', amount, method: currentDepositMethod });
 }
 
 function checkDeposit() {
