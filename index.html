@@ -8,42 +8,42 @@
 <style>
   /* ── DARK THEME (default) ── */
   :root {
-    --gold: #FFD700;
-    --gold2: #FFA500;
-    --bg: #0d0d14;
-    --dark: #0d0d14;
-    --card: #16161f;
-    --card2: #1e1e2e;
-    --border: #2a2a3e;
-    --green: #00e87a;
-    --red: #ff3f5e;
-    --purple: #7c3aff;
-    --blue: #3a8fff;
-    --text: #f0f0ff;
-    --muted: #6b6b8a;
-    --input-bg: #0a0a10;
-    --nav-bg: rgba(13,13,20,0.97);
-    --glow: 0 0 24px rgba(255,215,0,0.25);
+    --gold: #f0b429;
+    --gold2: #d97706;
+    --bg: #080a15;
+    --dark: #080a15;
+    --card: #0f1222;
+    --card2: #171b30;
+    --border: rgba(255,255,255,0.07);
+    --green: #10d47f;
+    --red: #f24b6a;
+    --purple: #7c5cfc;
+    --blue: #4b8ef0;
+    --text: #dfe3f2;
+    --muted: #525a78;
+    --input-bg: #0a0d1c;
+    --nav-bg: rgba(8,10,21,0.98);
+    --glow: 0 8px 32px rgba(240,180,41,0.08);
   }
 
   /* ── LIGHT THEME ── */
   [data-theme="light"] {
-    --gold: #e09000;
-    --gold2: #c07800;
-    --bg: #f4f4f8;
-    --dark: #f4f4f8;
+    --gold: #d97706;
+    --gold2: #b45309;
+    --bg: #eef0f8;
+    --dark: #eef0f8;
     --card: #ffffff;
-    --card2: #eeeef4;
-    --border: #d8d8e4;
-    --green: #00aa55;
-    --red: #e02040;
-    --purple: #6820e0;
-    --blue: #1860d0;
-    --text: #111120;
-    --muted: #7070a0;
-    --input-bg: #f0f0f8;
-    --nav-bg: rgba(244,244,248,0.97);
-    --glow: 0 0 24px rgba(200,130,0,0.15);
+    --card2: #e8eaf6;
+    --border: rgba(0,0,0,0.07);
+    --green: #059669;
+    --red: #dc2626;
+    --purple: #7c3aed;
+    --blue: #2563eb;
+    --text: #111827;
+    --muted: #6b7280;
+    --input-bg: #f4f5fb;
+    --nav-bg: rgba(238,240,248,0.98);
+    --glow: 0 8px 32px rgba(217,119,6,0.08);
   }
 
   /* ── STREAMER MODE COIN ── */
@@ -51,51 +51,52 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 17px;
-    height: 17px;
+    width: 16px;
+    height: 16px;
     background: linear-gradient(135deg, var(--gold), var(--gold2));
     color: #000;
     border-radius: 50%;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 900;
     vertical-align: middle;
-    margin-left: 2px;
+    margin-left: 1px;
     line-height: 1;
   }
 
   /* ── BLUE THEME ── */
   [data-theme="blue"] {
-    --gold: #60b8ff;
-    --gold2: #3d9fe0;
-    --bg: #0a1628;
-    --dark: #0a1628;
-    --card: #112040;
-    --card2: #162850;
-    --border: #1e3a60;
-    --green: #00d4a0;
-    --red: #ff5577;
-    --purple: #5599ff;
-    --blue: #60b8ff;
-    --text: #e0efff;
-    --muted: #5a80aa;
-    --input-bg: #0d1e38;
-    --nav-bg: rgba(10,22,40,0.97);
-    --glow: 0 0 24px rgba(96,184,255,0.2);
+    --gold: #58b4ff;
+    --gold2: #3a9ee0;
+    --bg: #06101e;
+    --dark: #06101e;
+    --card: #0c1828;
+    --card2: #121e34;
+    --border: rgba(88,180,255,0.1);
+    --green: #00d49a;
+    --red: #ff4466;
+    --purple: #4488ff;
+    --blue: #58b4ff;
+    --text: #d8eaff;
+    --muted: #48668a;
+    --input-bg: #091420;
+    --nav-bg: rgba(6,16,30,0.98);
+    --glow: 0 8px 32px rgba(88,180,255,0.1);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  
+
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
     transition: background 0.3s, color 0.3s;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* ── PARTICLES BG ── */
-  #particles { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; }
+  #particles { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:0; opacity:0.35; }
 
   /* ── SCREENS ── */
   .screen { display:none; min-height:100vh; position:relative; z-index:1; }
@@ -104,61 +105,49 @@
   /* ══════════════════════════════════
      MAIN MENU
   ══════════════════════════════════ */
-  #home {
-    background: var(--bg);
-    padding-bottom: 40px;
-  }
+  #home { background: var(--bg); padding-bottom: 40px; }
 
   .casino-header {
     text-align: center;
-    padding: 30px 20px 20px;
+    padding: 24px 20px 14px;
     position: relative;
   }
 
   .casino-logo {
-    font-size: 72px;
-    filter: drop-shadow(0 0 30px rgba(255,215,0,0.8));
+    font-size: 58px;
+    filter: drop-shadow(0 0 18px rgba(240,180,41,0.5));
     animation: float 3s ease-in-out infinite;
   }
 
-  @keyframes float {
-    0%,100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
+  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
 
   .casino-title {
-    font-size: 32px;
+    font-size: 26px;
     font-weight: 900;
-    background: linear-gradient(135deg, #FFD700, #FF6B00, #FFD700);
-    background-size: 200% auto;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: shine 3s linear infinite;
-    letter-spacing: 2px;
-    margin-top: 5px;
+    letter-spacing: 4px;
+    margin-top: 6px;
   }
 
-  @keyframes shine {
-    0% { background-position: 0% }
-    100% { background-position: 200% }
-  }
+  @keyframes shine { 0%{background-position:0%} 100%{background-position:200%} }
 
   .casino-subtitle {
     color: var(--muted);
-    font-size: 13px;
-    letter-spacing: 4px;
+    font-size: 10px;
+    letter-spacing: 3px;
     text-transform: uppercase;
-    margin-top: 4px;
+    margin-top: 3px;
   }
 
   /* ── BALANCE CARD ── */
   .balance-card {
-    margin: 0 16px 20px;
-    background: linear-gradient(135deg, #1e0a3c, #0e1a3c);
-    border: 1px solid var(--gold);
+    margin: 0 14px 14px;
+    background: var(--card);
+    border: 1px solid rgba(240,180,41,0.18);
     border-radius: 20px;
-    padding: 20px 24px;
-    box-shadow: var(--glow), inset 0 1px 0 rgba(255,215,0,0.2);
+    padding: 18px 20px;
     position: relative;
     overflow: hidden;
   }
@@ -166,59 +155,48 @@
   .balance-card::before {
     content: '';
     position: absolute;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: radial-gradient(ellipse, rgba(255,215,0,0.05) 0%, transparent 60%);
+    top: 0; right: 0;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(240,180,41,0.07) 0%, transparent 70%);
     pointer-events: none;
   }
 
-  .balance-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 2px; }
-  .balance-amount {
-    font-size: 42px;
-    font-weight: 900;
-    color: var(--gold);
-    text-shadow: 0 0 20px rgba(255,215,0,0.5);
-    line-height: 1.1;
-  }
-  .balance-currency { font-size: 20px; color: var(--gold2); margin-left: 4px; }
+  .balance-label { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
+  .balance-amount { font-size: 38px; font-weight: 900; color: var(--gold); line-height: 1.1; }
+  .balance-currency { font-size: 18px; color: var(--gold2); margin-left: 3px; }
 
   .balance-stats {
     display: flex;
-    gap: 16px;
+    gap: 0;
     margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(255,215,0,0.15);
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
   }
   .stat { flex: 1; }
-  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
-  .stat-value { font-size: 16px; font-weight: 700; }
+  .stat-label { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .stat-value { font-size: 14px; font-weight: 700; margin-top: 2px; }
   .stat-value.green { color: var(--green); }
   .stat-value.red { color: var(--red); }
 
   /* ── SECTION TITLE ── */
   .section-title {
-    padding: 10px 20px 10px;
-    font-size: 11px;
+    padding: 8px 16px;
+    font-size: 10px;
     text-transform: uppercase;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     color: var(--muted);
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
   }
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
 
   /* ── GAME GRID ── */
   .game-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 14px;
     margin-bottom: 8px;
   }
 
@@ -226,54 +204,55 @@
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 16px;
-    padding: 20px 16px;
-    text-align: center;
+    padding: 13px 16px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
-    overflow: hidden;
     user-select: none;
     -webkit-user-select: none;
   }
 
-  .game-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.03), transparent);
-    pointer-events: none;
-  }
-
-  .game-card:active { transform: scale(0.96); }
-  
-  .game-card.online {
-    border-color: rgba(0,255,136,0.3);
-    background: linear-gradient(135deg, #0d1f17, var(--card));
-  }
+  .game-card:active { transform: scale(0.98); opacity: 0.85; }
+  .game-card.online {}
 
   .game-card .badge {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 10px; right: 10px;
     font-size: 9px;
-    padding: 2px 7px;
+    padding: 2px 8px;
     border-radius: 20px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
   }
 
-  .badge-live { background: var(--red); color: white; animation: pulse 1.5s infinite; }
-  .badge-hot { background: var(--gold2); color: #000; }
-
-  @keyframes pulse {
-    0%,100% { opacity:1; }
-    50% { opacity:0.6; }
+  .badge-live {
+    background: rgba(242,75,106,0.15);
+    color: var(--red);
+    border: 1px solid rgba(242,75,106,0.3);
+    animation: pulse 1.5s infinite;
+  }
+  .badge-hot {
+    background: rgba(240,180,41,0.15);
+    color: var(--gold);
+    border: 1px solid rgba(240,180,41,0.3);
   }
 
-  .game-icon { font-size: 40px; margin-bottom: 8px; line-height: 1; }
-  .game-name { font-size: 14px; font-weight: 700; color: var(--text); }
-  .game-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  .game-icon {
+    width: 48px; height: 48px;
+    border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+  }
+  .game-card-body { flex: 1; min-width: 0; }
+  .game-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .game-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .game-card-arrow { color: var(--muted); font-size: 18px; flex-shrink: 0; }
 
   /* ── NAV BAR ── */
   .nav-bar {
@@ -283,7 +262,7 @@
     backdrop-filter: blur(20px);
     border-top: 1px solid var(--border);
     display: flex;
-    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    padding: 10px 0 calc(10px + env(safe-area-inset-bottom));
     z-index: 100;
   }
 
@@ -292,14 +271,24 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
+    gap: 4px;
     cursor: pointer;
-    padding: 6px 0;
+    padding: 4px 0;
     color: var(--muted);
     font-size: 10px;
     transition: color 0.2s;
+    position: relative;
   }
   .nav-item.active { color: var(--gold); }
+  .nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: -10px; left: 50%;
+    transform: translateX(-50%);
+    width: 28px; height: 2px;
+    background: var(--gold);
+    border-radius: 0 0 3px 3px;
+  }
   .nav-item .nav-icon { font-size: 22px; }
 
   /* ══════════════════════════════════
@@ -312,33 +301,34 @@
   .game-header {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 16px 20px;
-    background: var(--card);
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--nav-bg);
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
     z-index: 10;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(20px);
   }
 
   .back-btn {
-    width: 36px; height: 36px;
-    border-radius: 50%;
-    background: var(--border);
-    border: none;
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: var(--card2);
+    border: 1px solid var(--border);
     color: var(--text);
-    font-size: 18px;
+    font-size: 20px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background 0.2s;
+    transition: all 0.15s;
+    line-height: 1;
   }
-  .back-btn:active { background: var(--purple); }
+  .back-btn:active { background: var(--card); border-color: var(--gold); color: var(--gold); }
 
-  .game-header-title { font-size: 18px; font-weight: 700; }
-  .game-header-balance { margin-left: auto; font-size: 14px; color: var(--gold); font-weight: 700; }
+  .game-header-title { font-size: 16px; font-weight: 700; }
+  .game-header-balance { margin-left: auto; font-size: 13px; color: var(--gold); font-weight: 700; background: rgba(240,180,41,0.1); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(240,180,41,0.2); }
 
   /* ── BET CONTROLS ── */
   .game-body { padding: 20px 16px; }
@@ -401,21 +391,37 @@
 
   /* ── DAILY BONUS ROULETTE ── */
   .bonus-card {
-    margin: 0 16px 16px;
-    background: linear-gradient(135deg, #1a0a3a 0%, #0a1a3a 50%, #0a2a1a 100%);
-    border: 1px solid rgba(255,215,0,0.25);
-    border-radius: 18px;
-    padding: 16px;
+    margin: 0 14px 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 13px 16px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    cursor: pointer;
     position: relative;
     overflow: hidden;
   }
   .bonus-card::before {
     content: '';
     position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 70% 50%, rgba(255,215,0,0.07) 0%, transparent 70%);
+    top: 0; right: 0;
+    width: 80px; height: 100%;
+    background: radial-gradient(circle at 90% 50%, rgba(240,180,41,0.05) 0%, transparent 80%);
     pointer-events: none;
   }
+  .bonus-card-icon {
+    width: 48px; height: 48px;
+    border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+    background: linear-gradient(135deg, #1f1500, #3d2a00);
+  }
+  .bonus-card-body { flex: 1; }
+  .bonus-card-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .bonus-card-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .bonus-card-arrow { color: var(--muted); font-size: 18px; flex-shrink: 0; }
   .bonus-spin-btn {
     width: 100%;
     padding: 14px;
@@ -560,22 +566,21 @@
   /* ── SPIN BUTTON ── */
   .spin-btn {
     width: 100%;
-    padding: 18px;
-    border-radius: 16px;
+    padding: 15px;
+    border-radius: 14px;
     border: none;
     background: linear-gradient(135deg, var(--gold), var(--gold2));
     color: #000;
-    font-size: 18px;
-    font-weight: 900;
+    font-size: 16px;
+    font-weight: 800;
     cursor: pointer;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
-    transition: all 0.2s;
-    box-shadow: 0 4px 20px rgba(255,165,0,0.4);
-    margin-top: 16px;
+    transition: all 0.15s;
+    margin-top: 14px;
   }
-  .spin-btn:active { transform: scale(0.97); }
-  .spin-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .spin-btn:active { transform: scale(0.97); opacity: 0.9; }
+  .spin-btn:disabled { opacity:0.45; cursor:not-allowed; }
 
   /* ── RESULT TOAST ── */
   .result-toast {
@@ -2003,16 +2008,13 @@
   </div>
 
   <!-- Daily Bonus Card -->
-  <div class="bonus-card" onclick="openDailyBonusModal()" style="cursor:pointer">
-    <div style="display:flex;align-items:center;gap:14px">
-      <div style="font-size:40px;line-height:1;flex-shrink:0">🎰</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:11px;color:rgba(255,215,0,0.7);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:3px">Ежедневный бонус</div>
-        <div style="font-size:16px;font-weight:800;margin-bottom:4px">Крути рулетку!</div>
-        <div id="dailyBonusStatus" style="font-size:12px;color:rgba(255,255,255,0.5)">Загрузка...</div>
-      </div>
-      <div id="dailyBonusArrow" style="font-size:24px;color:rgba(255,215,0,0.6)">›</div>
+  <div class="bonus-card" onclick="openDailyBonusModal()">
+    <div class="bonus-card-icon">🎰</div>
+    <div class="bonus-card-body">
+      <div class="bonus-card-title">Ежедневный бонус</div>
+      <div class="bonus-card-sub" id="dailyBonusStatus">Загрузка...</div>
     </div>
+    <div class="bonus-card-arrow" id="dailyBonusArrow">›</div>
   </div>
 
   <!-- Tasks section -->
@@ -2047,53 +2049,77 @@
      GAMES SCREEN
 ══════════════════════════════════ -->
 <div class="screen" id="games-screen">
-  <div style="padding:16px 16px 80px;background:var(--bg);min-height:100vh">
-    <div style="font-size:20px;font-weight:900;margin-bottom:16px">🎮 Все игры</div>
+  <div style="padding:16px 0 80px;background:var(--bg);min-height:100vh">
+    <div style="font-size:17px;font-weight:900;margin-bottom:12px;padding:0 14px">Все игры</div>
     <div class="game-grid">
       <div class="game-card" onclick="openGame('slots')">
         <span class="badge badge-hot">HOT</span>
-        <div class="game-icon">🎰</div>
-        <div class="game-name">Слоты</div>
-        <div class="game-desc">до х50</div>
+        <div class="game-icon" style="background:linear-gradient(135deg,#3d1500,#7a2e00)">🎰</div>
+        <div class="game-card-body">
+          <div class="game-name">Слоты</div>
+          <div class="game-desc">до ×50 — испытай удачу</div>
+        </div>
+        <div class="game-card-arrow">›</div>
       </div>
       <div class="game-card" onclick="openGame('dice')">
-        <div class="game-icon">🎲</div>
-        <div class="game-name">Дайс</div>
-        <div class="game-desc">Угадай кубик</div>
+        <div class="game-icon" style="background:linear-gradient(135deg,#001f3d,#003d7a)">🎲</div>
+        <div class="game-card-body">
+          <div class="game-name">Дайс</div>
+          <div class="game-desc">Угадай кубик</div>
+        </div>
+        <div class="game-card-arrow">›</div>
       </div>
       <div class="game-card" onclick="openGame('coinflip')">
-        <div class="game-icon">🪙</div>
-        <div class="game-name">Флип Коин</div>
-        <div class="game-desc">х2 орёл/решка</div>
+        <div class="game-icon" style="background:linear-gradient(135deg,#1f1500,#3d2a00)">🪙</div>
+        <div class="game-card-body">
+          <div class="game-name">Флип Коин</div>
+          <div class="game-desc">×2 орёл или решка</div>
+        </div>
+        <div class="game-card-arrow">›</div>
       </div>
       <div class="game-card" onclick="openGame('plinko')">
-        <div class="game-icon">🔵</div>
-        <div class="game-name">Плинко</div>
-        <div class="game-desc">Шарик удачи</div>
+        <div class="game-icon" style="background:linear-gradient(135deg,#001a3d,#003073)">🔵</div>
+        <div class="game-card-body">
+          <div class="game-name">Плинко</div>
+          <div class="game-desc">Шарик удачи</div>
+        </div>
+        <div class="game-card-arrow">›</div>
       </div>
       <div class="game-card" onclick="openGame('mines')">
         <span class="badge badge-hot">HOT</span>
-        <div class="game-icon">💣</div>
-        <div class="game-name">Минки</div>
-        <div class="game-desc">Мины • множитель растёт</div>
+        <div class="game-icon" style="background:linear-gradient(135deg,#1a0000,#3d0000)">💣</div>
+        <div class="game-card-body">
+          <div class="game-name">Минки</div>
+          <div class="game-desc">Мины — множитель растёт</div>
+        </div>
+        <div class="game-card-arrow">›</div>
       </div>
       <div class="game-card online" onclick="openGame('crash')">
         <span class="badge badge-live">LIVE</span>
-        <div class="game-icon">🚀</div>
-        <div class="game-name">Краш</div>
-        <div class="game-desc">Вылети до крэша!</div>
+        <div class="game-icon" style="background:linear-gradient(135deg,#0a001f,#1a0040)">🚀</div>
+        <div class="game-card-body">
+          <div class="game-name">Краш</div>
+          <div class="game-desc">Вылети до крэша!</div>
+        </div>
+        <div class="game-card-arrow">›</div>
       </div>
-      <div class="game-card online" onclick="openGame('wheel')" style="grid-column:1/-1">
+      <div class="game-card online" onclick="openGame('wheel')">
         <span class="badge badge-live">LIVE</span>
-        <div class="game-icon">🎡</div>
-        <div class="game-name">Колесо</div>
-        <div class="game-desc">х2 х3 х5 х20 — Реальное онлайн колесо</div>
+        <div class="game-icon" style="background:linear-gradient(135deg,#001f1a,#003d33)">🎡</div>
+        <div class="game-card-body">
+          <div class="game-name">Колесо</div>
+          <div class="game-desc">×2 ×3 ×5 ×20 — онлайн колесо</div>
+        </div>
+        <div class="game-card-arrow">›</div>
       </div>
-      <div class="game-card online" onclick="openGame('battle')" style="grid-column:1/-1">
+      <div class="game-card online" onclick="openGame('battle')">
         <span class="badge badge-live">LIVE</span>
-        <div class="game-icon">⚔️</div>
-        <div class="game-name">Королевская Битва</div>
-        <div class="game-desc">Все против всех — победитель забирает весь банк!</div>
+        <div class="game-icon" style="background:linear-gradient(135deg,#1a0a00,#3d1f00)">⚔️</div>
+        <div class="game-card-body">
+          <div class="game-name">Королевская Битва</div>
+          <div class="game-desc">Победитель забирает весь банк</div>
+        </div>
+        <div class="game-card-arrow">›</div>
       </div>
     </div>
   </div>
@@ -2817,7 +2843,7 @@
         <div onclick="selectDepositMethod('crypto')" style="border:2px solid rgba(99,102,241,.5);border-radius:16px;padding:16px 12px;text-align:center;cursor:pointer;background:rgba(99,102,241,.08);transition:.15s" onmouseenter="this.style.borderColor='#818cf8'" onmouseleave="this.style.borderColor='rgba(99,102,241,.5)'">
           <div style="font-size:26px;margin-bottom:6px">₿</div>
           <div style="font-weight:800;font-size:14px;margin-bottom:2px">Крипта</div>
-          <div style="font-size:11px;color:var(--muted)">@xRocket</div>
+          <div style="font-size:11px;color:var(--muted)">@CryptoBot</div>
         </div>
         <div style="border:2px solid rgba(255,255,255,.08);border-radius:16px;padding:16px 12px;text-align:center;opacity:.4;cursor:not-allowed;position:relative">
           <div style="font-size:26px;margin-bottom:6px">💳</div>
@@ -2842,7 +2868,7 @@
         <div style="font-size:11px;color:var(--muted);margin-top:2px" id="depositCreditNote">зачислится — ₽</div>
         <div style="font-size:11px;color:var(--muted);margin-top:6px;opacity:.7">Можно оплатить TON, USDT, BTC и другими монетами</div>
       </div>
-      <button id="depositPayBtn" onclick="" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:10px">🚀 Оплатить через xRocket</button>
+      <button id="depositPayBtn" onclick="" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:15px;font-weight:900;cursor:pointer;margin-bottom:10px">💎 Оплатить через CryptoBot</button>
       <button onclick="checkDeposit()" style="width:100%;padding:14px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;font-weight:700;cursor:pointer">✅ Я оплатил — проверить</button>
     </div>
     <button onclick="closeDepositModal()" style="width:100%;padding:12px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13px;cursor:pointer;margin-top:8px">Отмена</button>
@@ -2853,7 +2879,7 @@
 <div id="withdrawModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:flex-end;justify-content:center" onclick="if(event.target===this)closeWithdrawModal()">
   <div style="background:var(--card);border-radius:24px 24px 0 0;padding:24px 20px 32px;width:100%;max-width:480px">
     <div style="font-size:18px;font-weight:900;margin-bottom:4px">💸 Вывод средств</div>
-    <div id="withdrawSubtitle" style="font-size:12px;color:var(--muted);margin-bottom:16px">Вывод через @xRocket</div>
+    <div id="withdrawSubtitle" style="font-size:12px;color:var(--muted);margin-bottom:16px">Вывод через @CryptoBot</div>
 
     <!-- Блок "нельзя вывести" -->
     <div id="wagerBlock" style="display:none;color:#ff3f5e;font-size:15px;font-weight:700;margin-bottom:14px">
@@ -2863,7 +2889,7 @@
     <!-- Обычный блок вывода (скрывается если вейджер не выполнен) -->
     <div id="withdrawFormBlock">
       <div style="font-size:12px;color:rgba(250,200,50,.8);background:rgba(250,200,50,.08);border:1px solid rgba(250,200,50,.2);border-radius:10px;padding:10px 12px;margin-bottom:14px">
-        ⚠️ Убедись что у тебя запущен @xRocket — иначе перевод не пройдёт
+        ⚠️ Убедись что у тебя запущен @CryptoBot — иначе перевод не пройдёт
       </div>
       <input id="withdrawAmount" type="number" min="100" placeholder="Сумма в рублях (мин. 100₽)"
         style="width:100%;padding:13px 16px;border-radius:12px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;margin-bottom:12px;box-sizing:border-box">
@@ -5901,10 +5927,10 @@ function updateDepositUI() {
   // обновляем subtitle только если мы уже на шаге выбора суммы (не на шаге 0)
   const step0visible = document.getElementById('depositStep0') && document.getElementById('depositStep0').style.display !== 'none';
   if (depSubtitle && !step0visible) depSubtitle.textContent = ok
-    ? 'Оплата через @xRocket'
+    ? 'Оплата через @CryptoBot'
     : '⚠️ Пополнение временно недоступно';
   if (wdSubtitle) wdSubtitle.textContent = ok
-    ? 'Вывод через @xRocket'
+    ? 'Вывод через @CryptoBot'
     : '⚠️ Вывод временно недоступен';
   if (depInput) depInput.placeholder = ok ? `Сумма в рублях (мин. ${minDep}₽)` : 'Недоступно';
   if (depInput) depInput.disabled = !ok;
@@ -5931,7 +5957,7 @@ function selectDepositMethod(method) {
   if (method !== 'crypto') return;
   document.getElementById('depositStep0').style.display = 'none';
   document.getElementById('depositStep1').style.display = '';
-  document.getElementById('depositSubtitle').textContent = 'Оплата через @xRocket';
+  document.getElementById('depositSubtitle').textContent = 'Оплата через @CryptoBot';
 }
 function closeDepositModal() {
   document.getElementById('depositModal').style.display = 'none';
