@@ -1946,6 +1946,87 @@
   }
   .battle-join-btn:active { transform: scale(0.96); }
   .battle-join-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+  /* ══ КОСТИ — МУЛЬТИПЛЕЕР ══ */
+  .dt-create-btn {
+    width: calc(100% - 32px); margin: 14px 16px 10px;
+    padding: 14px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000; font-size: 16px; font-weight: 900; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 18px rgba(255,165,0,0.28); letter-spacing: 0.3px;
+  }
+  .dt-table-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 13px 14px; margin: 0 16px 9px; display: flex; align-items: center;
+    gap: 12px; cursor: pointer; transition: border-color 0.2s, opacity 0.2s;
+  }
+  .dt-table-card:active { border-color: var(--gold); }
+  .dt-table-card.dt-active-game { opacity: 0.5; cursor: default; }
+  .dt-table-avatar-wrap {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    background: linear-gradient(135deg, #1e2a4a, #2d3d6e);
+    display: flex; align-items: center; justify-content: center; font-size: 22px;
+  }
+  .dt-players-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px 14px;
+  }
+  .dt-player-slot {
+    background: var(--card); border: 2px solid var(--border); border-radius: 12px;
+    padding: 12px 8px; text-align: center; transition: border-color 0.3s, background 0.3s;
+  }
+  .dt-player-slot.dt-p-rolled { border-color: #2d9e4e; }
+  .dt-player-slot.dt-p-winner { border-color: var(--gold); background: rgba(255,215,0,0.08); }
+  .dt-player-slot.dt-p-empty { opacity: 0.3; }
+  .dt-cup-zone {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 14px; padding: 10px 20px 16px;
+  }
+  .dt-cup {
+    font-size: 88px; line-height: 1; cursor: pointer;
+    filter: drop-shadow(0 6px 22px rgba(255,200,0,0.35));
+    user-select: none; -webkit-user-select: none; transition: transform 0.1s;
+  }
+  .dt-cup:active { transform: scale(0.88); }
+  @keyframes dtShake {
+    0%,100% { transform: rotate(0deg) scale(1); }
+    10%      { transform: rotate(-20deg) scale(1.14) translateY(-12px); }
+    25%      { transform: rotate(18deg)  scale(1.10) translateY(-7px); }
+    40%      { transform: rotate(-13deg) scale(1.12) translateY(-10px); }
+    55%      { transform: rotate(10deg)  scale(1.07) translateY(-4px); }
+    70%      { transform: rotate(-5deg)  scale(1.04); }
+    85%      { transform: rotate(3deg)   scale(1.02); }
+  }
+  .dt-cup.dt-shaking { animation: dtShake 0.75s ease-in-out; }
+  .dt-timer-ring { position: relative; width: 62px; height: 62px; }
+  .dt-timer-ring svg { display: block; transform: rotate(-90deg); }
+  .dt-timer-num {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%); font-size: 22px; font-weight: 900; color: #fff;
+  }
+  .dt-roll-btn {
+    width: calc(100% - 32px); margin: 0 16px; padding: 16px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000; font-size: 17px; font-weight: 900; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(255,165,0,0.35); letter-spacing: 0.5px;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .dt-roll-btn:disabled { opacity: 0.38; cursor: default; transform: none !important; }
+  .dt-roll-btn:active:not(:disabled) { transform: scale(0.97); }
+  .dt-pl-btn {
+    flex: 1; padding: 12px 6px; text-align: center; border-radius: 10px;
+    background: var(--card2); border: 2px solid var(--border); color: var(--text);
+    font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s;
+  }
+  .dt-pl-btn.selected {
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #000; border-color: transparent;
+  }
+  @keyframes dtSlideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  .dt-winner-banner { animation: dtSlideUp 0.4s ease; }
 </style>
 </head>
 <body>
@@ -2083,6 +2164,12 @@
         <div class="game-icon">⚔️</div>
         <div class="game-name">Королевская Битва</div>
         <div class="game-desc">Все против всех — победитель забирает весь банк!</div>
+      </div>
+      <div class="game-card online" onclick="openGame('dice-table')" style="grid-column:1/-1">
+        <span class="badge badge-live">LIVE</span>
+        <div class="game-icon">🎲</div>
+        <div class="game-name">Кости</div>
+        <div class="game-desc">Бросай кубики — побеждает старший! До 6 игроков</div>
       </div>
     </div>
   </div>
@@ -2604,6 +2691,113 @@
       <div class="wheel-preset" onclick="maxBet('battleBetInput')" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border-color:var(--gold);font-weight:900">MAX</div>
     </div>
   </div>
+</div>
+
+<!-- ══════════════════════════════════
+     КОСТИ (DICE TABLE MULTIPLAYER)
+══════════════════════════════════ -->
+<div class="screen" id="dice-table-screen" style="padding-bottom:0">
+
+  <!-- ЛОББИ -->
+  <div id="dtLobbyView">
+    <div class="game-header">
+      <button class="back-btn" onclick="closeGame()">‹</button>
+      <span class="game-header-title">🎲 Кости</span>
+      <span class="game-header-balance" id="dtBalance">0₽</span>
+    </div>
+    <button class="dt-create-btn" onclick="dtOpenCreate()">➕&nbsp; Создать стол</button>
+    <div id="dtTablesList" style="padding:4px 0 80px">
+      <div id="dtTablesEmpty" style="text-align:center;padding:48px 24px;color:var(--muted);font-size:13px;line-height:1.8">
+        Нет активных столов.<br>Создайте первый!
+      </div>
+    </div>
+  </div>
+
+  <!-- ИГРА -->
+  <div id="dtGameView" style="display:none;flex-direction:column;min-height:100vh;padding-bottom:120px">
+
+    <!-- Шапка: банк + ставка -->
+    <div style="background:var(--card);border-bottom:1px solid var(--border);padding:13px 16px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:1px">🏦 Банк</div>
+        <div id="dtBankDisplay" style="font-size:26px;font-weight:900;color:var(--gold)">0₽</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:1px">Ставка</div>
+        <div id="dtBetDisplay" style="font-size:18px;font-weight:700;color:var(--text)">0₽</div>
+      </div>
+    </div>
+
+    <!-- Слоты игроков -->
+    <div id="dtPlayersGrid" class="dt-players-grid"></div>
+
+    <!-- Стакан + таймер -->
+    <div class="dt-cup-zone">
+      <div id="dtCupEmoji" class="dt-cup" onclick="dtTapCup()">🎲</div>
+      <div id="dtTimerWrap" style="display:none">
+        <div class="dt-timer-ring">
+          <svg width="62" height="62" viewBox="0 0 62 62">
+            <circle cx="31" cy="31" r="27" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="4"/>
+            <circle id="dtTimerCircle" cx="31" cy="31" r="27" fill="none" stroke="var(--gold)" stroke-width="4"
+                    stroke-dasharray="169.6" stroke-dashoffset="0" style="transition:stroke-dashoffset 1s linear"/>
+          </svg>
+          <div class="dt-timer-num" id="dtTimerNum">10</div>
+        </div>
+      </div>
+      <div id="dtCupHint" style="font-size:13px;color:var(--muted);text-align:center;line-height:1.6">Ждём игроков...</div>
+    </div>
+
+    <!-- Кнопка броска -->
+    <button id="dtRollBtn" class="dt-roll-btn" onclick="dtTapCup()" style="display:none;margin-bottom:14px">
+      🎲&nbsp; Бросить кости!
+    </button>
+
+    <!-- Кнопка выхода (после результата) -->
+    <button id="dtCloseBtn" onclick="dtLeaveGame()" style="display:none;width:calc(100% - 32px);margin:0 16px 20px;padding:14px;border-radius:14px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:15px;font-weight:700;cursor:pointer">
+      ← Вернуться к столам
+    </button>
+  </div>
+
+  <!-- Баннер победителя (фиксированный снизу) -->
+  <div id="dtWinnerBanner" class="dt-winner-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(180deg,rgba(10,15,30,0) 0%,rgba(10,15,30,0.97) 28%);padding:20px 20px 32px;text-align:center;z-index:90;pointer-events:none">
+    <div id="dtWinnerEmoji" style="font-size:52px;margin-bottom:6px">🏆</div>
+    <div id="dtWinnerText" style="font-size:23px;font-weight:900;color:var(--gold)">Победитель!</div>
+    <div id="dtWinnerSub" style="font-size:14px;color:var(--muted);margin-top:5px"></div>
+    <div id="dtCloseCntdwn" style="font-size:12px;color:var(--muted);margin-top:10px"></div>
+  </div>
+
+  <!-- Модалка создания стола -->
+  <div id="dtCreateModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;align-items:flex-end;justify-content:center" onclick="if(event.target===this)dtCloseCreate()">
+    <div style="background:var(--card);border-radius:24px 24px 0 0;padding:24px 20px 36px;width:100%;max-width:480px">
+      <div style="font-size:18px;font-weight:900;margin-bottom:18px">🎲 Новый стол</div>
+
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px">Ставка</div>
+      <div class="bet-input-row" style="margin-bottom:8px">
+        <input id="dtBetInput" type="number" class="bet-input" value="100" min="10">
+        <span class="bet-currency">₽</span>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap">
+        <div class="wheel-preset" onclick="setBet('dtBetInput',50)">50</div>
+        <div class="wheel-preset" onclick="setBet('dtBetInput',100)">100</div>
+        <div class="wheel-preset" onclick="setBet('dtBetInput',250)">250</div>
+        <div class="wheel-preset" onclick="setBet('dtBetInput',500)">500</div>
+        <div class="wheel-preset" onclick="maxBet('dtBetInput')" style="background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;border-color:var(--gold);font-weight:900">MAX</div>
+      </div>
+
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">Количество игроков</div>
+      <div style="display:flex;gap:8px;margin-bottom:24px">
+        <div id="dtPl2" class="dt-pl-btn selected" onclick="dtSelPlayers(2)">2</div>
+        <div id="dtPl3" class="dt-pl-btn"          onclick="dtSelPlayers(3)">3</div>
+        <div id="dtPl4" class="dt-pl-btn"          onclick="dtSelPlayers(4)">4</div>
+        <div id="dtPl5" class="dt-pl-btn"          onclick="dtSelPlayers(5)">5</div>
+        <div id="dtPl6" class="dt-pl-btn"          onclick="dtSelPlayers(6)">6</div>
+      </div>
+
+      <button onclick="dtDoCreate()" style="width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#000;font-size:16px;font-weight:900;cursor:pointer">🎲&nbsp; Создать стол</button>
+      <button onclick="dtCloseCreate()" style="width:100%;padding:12px;margin-top:8px;border-radius:12px;border:none;background:transparent;color:var(--muted);font-size:13px;cursor:pointer">Отмена</button>
+    </div>
+  </div>
+
 </div>
 
 <!-- ══════════════════════════════════
@@ -3802,6 +3996,33 @@ function handleWSMessage(data) {
     if (battleCtx) updateBattleUI();
     setTimeout(() => resetBattle(), 4000);
   }
+
+  // ── КОСТИ (dice table) ──
+  if (type === 'dice_tables_list') {
+    dtRenderLobby(data.tables || []);
+    const balEl = document.getElementById('dtBalance');
+    if (balEl) balEl.textContent = Math.floor(state.balance).toLocaleString('ru') + _cur();
+  }
+  if (type === 'dice_table_joined') {
+    if (data.balance !== undefined) { state.balance = data.balance; updateBalanceDisplay(); }
+    dtEnterGame(data.table_id, data.table);
+  }
+  if (type === 'dice_table_update') {
+    if (data.table && dtState.currentTableId === data.table.id) {
+      dtState.currentTable = data.table;
+      dtRenderGameView(data.table);
+    }
+  }
+  if (type === 'dice_table_result') {
+    if (data.balance !== undefined) { state.balance = data.balance; updateBalanceDisplay(); }
+    if (data.table && dtState.currentTableId === data.table.id) {
+      dtState.currentTable = data.table;
+      dtRenderGameView(data.table);
+    }
+  }
+  if (type === 'dice_error') {
+    showToast(data.msg || 'Ошибка');
+  }
 }
 
 function _crashBetRow(label, amount, cashout, crashed) {
@@ -4086,6 +4307,11 @@ function openGame(game) {
     battleInited = true;
     initBattleCanvas();
   }
+  if (game === 'dice-table') {
+    wsSend({ action: 'dice_get_tables' });
+    const balEl = document.getElementById('dtBalance');
+    if (balEl) balEl.textContent = Math.floor(state.balance).toLocaleString('ru') + _cur();
+  }
 }
 
 function closeGame() {
@@ -4139,6 +4365,8 @@ function updateBalanceDisplay() {
     const el = document.getElementById(g + 'Balance');
     if (el) el.textContent = fmt(state.balance) + _cur();
   });
+  const dtBalEl = document.getElementById('dtBalance');
+  if (dtBalEl) dtBalEl.textContent = fmt(state.balance) + _cur();
 }
 
 function updateGameBalance(game) {
@@ -7247,6 +7475,270 @@ function openDocModal(type) {
 function closeDocModal() {
   const overlay = document.getElementById('modalOverlay');
   if (overlay) overlay.style.display = 'none';
+}
+
+// ══════════════════════════════════
+// КОСТИ — МУЛЬТИПЛЕЕР (Dice Table)
+// ══════════════════════════════════
+const dtState = {
+  currentTableId: null,
+  currentTable: null,
+  hasRolled: false,
+  timerInterval: null,
+  timerSec: 10,
+  phase: null,
+};
+let dtSelMaxPlayers = 2;
+const DT_CIRC = 169.6; // 2π × 27
+
+function dtOpenCreate() {
+  document.getElementById('dtCreateModal').style.display = 'flex';
+}
+function dtCloseCreate() {
+  document.getElementById('dtCreateModal').style.display = 'none';
+}
+function dtSelPlayers(n) {
+  dtSelMaxPlayers = n;
+  [2,3,4,5,6].forEach(i => {
+    const el = document.getElementById('dtPl' + i);
+    if (el) el.classList.toggle('selected', i === n);
+  });
+}
+function dtDoCreate() {
+  const bet = parseFloat(document.getElementById('dtBetInput')?.value || 0);
+  if (!bet || bet < 10) { showToast('Минимум 10₽'); return; }
+  if (bet > state.balance) { showToast('Недостаточно средств'); return; }
+  dtCloseCreate();
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
+  wsSend({
+    action: 'dice_create_table',
+    bet: bet,
+    max_players: dtSelMaxPlayers,
+    username: tgUser.first_name || tgUser.username || 'Игрок',
+    avatar: tgUser.photo_url || '',
+  });
+}
+function dtJoinTable(tableId, bet) {
+  if (bet > state.balance) { showToast('Недостаточно средств'); return; }
+  const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user || {};
+  wsSend({
+    action: 'dice_join_table',
+    table_id: tableId,
+    username: tgUser.first_name || tgUser.username || 'Игрок',
+    avatar: tgUser.photo_url || '',
+  });
+}
+function dtEnterGame(tableId, table) {
+  dtState.currentTableId = tableId;
+  dtState.currentTable = table;
+  dtState.hasRolled = false;
+  dtState.phase = table.phase;
+  document.getElementById('dtLobbyView').style.display = 'none';
+  const gv = document.getElementById('dtGameView');
+  gv.style.display = 'flex';
+  document.getElementById('dtWinnerBanner').style.display = 'none';
+  document.getElementById('dtCloseBtn').style.display = 'none';
+  dtRenderGameView(table);
+}
+function dtLeaveGame() {
+  dtStopTimer();
+  dtState.currentTableId = null;
+  dtState.currentTable = null;
+  dtState.hasRolled = false;
+  dtState.phase = null;
+  document.getElementById('dtGameView').style.display = 'none';
+  document.getElementById('dtLobbyView').style.display = 'block';
+  document.getElementById('dtWinnerBanner').style.display = 'none';
+  document.getElementById('dtCloseBtn').style.display = 'none';
+  wsSend({ action: 'dice_get_tables' });
+}
+function dtRenderGameView(table) {
+  const bankEl = document.getElementById('dtBankDisplay');
+  if (bankEl) bankEl.textContent = Math.floor(table.bank).toLocaleString('ru') + _cur();
+  const betEl = document.getElementById('dtBetDisplay');
+  if (betEl) betEl.textContent = Math.floor(table.bet).toLocaleString('ru') + _cur();
+
+  const myEntry = (table.players || []).find(p => String(p.user_id) === String(state.userId));
+  if (myEntry && myEntry.rolled) dtState.hasRolled = true;
+
+  // Рендер ячеек игроков
+  const grid = document.getElementById('dtPlayersGrid');
+  if (grid) {
+    let html = '';
+    for (let i = 0; i < table.max_players; i++) {
+      const p = table.players[i];
+      if (!p) {
+        html += `<div class="dt-player-slot dt-p-empty">
+          <div style="font-size:28px;margin-bottom:5px;color:var(--muted)">+</div>
+          <div style="font-size:11px;color:var(--muted)">Ожидание</div>
+          <div style="font-size:20px;margin-top:6px;color:var(--border)">?</div>
+        </div>`;
+        continue;
+      }
+      const isMe = String(p.user_id) === String(state.userId);
+      const isWinner = table.winner_id && String(p.user_id) === String(table.winner_id);
+      const cls = 'dt-player-slot' + (isWinner ? ' dt-p-winner' : p.rolled ? ' dt-p-rolled' : '');
+      const rollColor = isWinner ? 'var(--gold)' : p.roll ? 'var(--green)' : 'var(--muted)';
+      const rollDisplay = p.roll ? _dtDiceEmoji(p.roll) : (p.rolled ? '⌛' : '?');
+      const rollFontSize = p.roll ? '34' : '22';
+      const avatarHtml = p.avatar && p.avatar.startsWith('http')
+        ? `<img src="${_esc(p.avatar)}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;margin:0 auto">`
+        : `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;margin:0 auto">${_esc((p.username||'?')[0].toUpperCase())}</div>`;
+      html += `<div class="${cls}">
+        <div style="margin-bottom:5px">${avatarHtml}</div>
+        <div style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${_esc(p.username)}${isMe ? ' <span style="color:var(--muted);font-weight:400">(Вы)</span>' : ''}</div>
+        <div style="font-size:${rollFontSize}px;font-weight:900;color:${rollColor};margin-top:5px;line-height:1">${rollDisplay}</div>
+        ${p.roll ? `<div style="font-size:10px;color:${rollColor};margin-top:3px">${p.roll}&nbsp;${p.roll===1?'очко':p.roll<5?'очка':'очков'}</div>` : ''}
+        ${isWinner ? `<div style="font-size:10px;color:var(--gold);font-weight:800;margin-top:4px">🏆 ПОБЕДИТЕЛЬ</div>` : ''}
+      </div>`;
+    }
+    grid.innerHTML = html;
+  }
+
+  const hintEl  = document.getElementById('dtCupHint');
+  const rollBtn = document.getElementById('dtRollBtn');
+  const timerWrap = document.getElementById('dtTimerWrap');
+  const closeBtn  = document.getElementById('dtCloseBtn');
+
+  if (table.phase === 'waiting') {
+    dtState.phase = 'waiting';
+    if (hintEl) hintEl.innerHTML = `Ждём игроков...<br><span style="color:var(--text);font-size:16px;font-weight:700">${table.current_players}/${table.max_players}</span>`;
+    if (rollBtn) rollBtn.style.display = 'none';
+    if (timerWrap) timerWrap.style.display = 'none';
+    if (closeBtn) closeBtn.style.display = 'none';
+    dtStopTimer();
+
+  } else if (table.phase === 'rolling') {
+    if (dtState.phase !== 'rolling') {
+      dtState.phase = 'rolling';
+      dtStartTimer();
+    }
+    if (hintEl) hintEl.textContent = dtState.hasRolled ? 'Ждём остальных игроков...' : 'Нажмите чтобы бросить кости!';
+    if (rollBtn) {
+      rollBtn.style.display = 'block';
+      rollBtn.disabled = dtState.hasRolled;
+      rollBtn.textContent = dtState.hasRolled ? '✅ Уже брошено!' : '🎲  Бросить кости!';
+    }
+    if (timerWrap) timerWrap.style.display = 'flex';
+    if (closeBtn) closeBtn.style.display = 'none';
+
+  } else if (table.phase === 'result') {
+    dtState.phase = 'result';
+    dtStopTimer();
+    if (hintEl) hintEl.textContent = '';
+    if (rollBtn) rollBtn.style.display = 'none';
+    if (timerWrap) timerWrap.style.display = 'none';
+    dtShowWinnerBanner(table);
+    if (closeBtn) {
+      closeBtn.style.display = 'none';
+      let sec = 5;
+      const cntEl = document.getElementById('dtCloseCntdwn');
+      if (cntEl) cntEl.textContent = `Закрыть через ${sec} сек...`;
+      const iv = setInterval(() => {
+        sec--;
+        if (cntEl) cntEl.textContent = sec > 0 ? `Закрыть через ${sec} сек...` : '';
+        if (sec <= 0) {
+          clearInterval(iv);
+          if (closeBtn) closeBtn.style.display = 'block';
+        }
+      }, 1000);
+    }
+  }
+}
+
+function _dtDiceEmoji(n) {
+  return ['⚀','⚁','⚂','⚃','⚄','⚅'][n - 1] || String(n);
+}
+
+function dtShowWinnerBanner(table) {
+  const banner = document.getElementById('dtWinnerBanner');
+  if (!banner) return;
+  banner.style.display = 'block';
+  const isMe = String(table.winner_id) === String(state.userId);
+  const payout = Math.floor(table.bank * 0.95);
+  const emojiEl = document.getElementById('dtWinnerEmoji');
+  const textEl  = document.getElementById('dtWinnerText');
+  const subEl   = document.getElementById('dtWinnerSub');
+  if (isMe) {
+    if (emojiEl) emojiEl.textContent = '🏆';
+    if (textEl)  textEl.textContent  = 'Вы победили!';
+    if (subEl)   subEl.textContent   = `Выпало ${table.winner_roll} — +${payout.toLocaleString('ru')}₽`;
+    try { playSound('win_big'); } catch(e) {}
+    try { window.Telegram?.WebApp?.HapticFeedback?.notificationOccurred('success'); } catch(e) {}
+  } else {
+    if (emojiEl) emojiEl.textContent = '😔';
+    if (textEl)  textEl.textContent  = _esc(table.winner_name || 'Игрок') + ' победил!';
+    if (subEl)   subEl.textContent   = `Выпало ${table.winner_roll}`;
+    try { playSound('lose'); } catch(e) {}
+  }
+}
+
+function dtTapCup() {
+  if (dtState.hasRolled || dtState.phase !== 'rolling') return;
+  const cup = document.getElementById('dtCupEmoji');
+  if (cup) {
+    cup.classList.remove('dt-shaking');
+    void cup.offsetWidth; // reflow
+    cup.classList.add('dt-shaking');
+    setTimeout(() => cup.classList.remove('dt-shaking'), 800);
+  }
+  dtState.hasRolled = true;
+  const btn = document.getElementById('dtRollBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '✅ Уже брошено!'; }
+  const hintEl = document.getElementById('dtCupHint');
+  if (hintEl) hintEl.textContent = 'Ждём остальных игроков...';
+  try { window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('medium'); } catch(e) {}
+  wsSend({ action: 'dice_roll', table_id: dtState.currentTableId });
+}
+
+function dtStartTimer() {
+  dtState.timerSec = 10;
+  const numEl  = document.getElementById('dtTimerNum');
+  const circle = document.getElementById('dtTimerCircle');
+  if (numEl)  numEl.textContent = '10';
+  if (circle) circle.style.strokeDashoffset = '0';
+  if (dtState.timerInterval) clearInterval(dtState.timerInterval);
+  dtState.timerInterval = setInterval(() => {
+    dtState.timerSec--;
+    const t = Math.max(0, dtState.timerSec);
+    if (numEl)  numEl.textContent = t;
+    if (circle) circle.style.strokeDashoffset = String(DT_CIRC * (1 - t / 10));
+    if (dtState.timerSec <= 0) dtStopTimer();
+  }, 1000);
+}
+
+function dtStopTimer() {
+  if (dtState.timerInterval) { clearInterval(dtState.timerInterval); dtState.timerInterval = null; }
+}
+
+function dtRenderLobby(tables) {
+  const container = document.getElementById('dtTablesList');
+  if (!container) return;
+  if (!tables || !tables.length) {
+    container.innerHTML = `<div style="text-align:center;padding:48px 24px;color:var(--muted);font-size:13px;line-height:1.8">Нет активных столов.<br>Создайте первый!</div>`;
+    return;
+  }
+  container.innerHTML = tables.map(t => {
+    const isActive = t.phase !== 'waiting';
+    const isFull   = t.current_players >= t.max_players;
+    const canJoin  = !isActive && !isFull;
+    const statusBg    = isActive ? 'rgba(220,50,50,0.14)'  : isFull ? 'rgba(200,160,0,0.14)' : 'rgba(40,180,80,0.14)';
+    const statusColor = isActive ? 'var(--red)' : isFull ? 'var(--gold)' : '#3ecf72';
+    const statusLabel = isActive ? '🔴 Идёт игра'
+                      : isFull   ? '⏳ Заполнен'
+                                 : `🟢 ${t.current_players}/${t.max_players}`;
+    return `<div class="dt-table-card${isActive ? ' dt-active-game' : ''}"${canJoin ? ` onclick="dtJoinTable('${_esc(t.id)}',${t.bet})"` : ''}>
+      <div class="dt-table-avatar-wrap">🎲</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px;font-weight:700">${_esc(t.creator_name)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:3px">Ставка: ${Math.floor(t.bet).toLocaleString('ru')}₽ · макс. ${t.max_players} игр.</div>
+      </div>
+      <div style="flex-shrink:0;text-align:right">
+        <div style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:${statusBg};color:${statusColor};white-space:nowrap">${statusLabel}</div>
+        <div style="font-size:15px;font-weight:900;color:var(--gold);margin-top:5px">${Math.floor(t.bet).toLocaleString('ru')}₽</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 </script>
 </body>
