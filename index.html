@@ -1983,18 +1983,42 @@
     gap: 14px; padding: 10px 20px 16px;
   }
   .dt-cup {
-    font-size: 88px; line-height: 1; cursor: pointer;
-    filter: drop-shadow(0 6px 22px rgba(255,200,0,0.35));
-    user-select: none; -webkit-user-select: none; transition: transform 0.1s;
+    cursor: pointer; user-select: none; -webkit-user-select: none;
+    transition: transform 0.1s;
   }
   .dt-cup:active { transform: scale(0.88); }
+  .dt-stakan {
+    width: 112px; height: 132px;
+    background: linear-gradient(165deg, #f0a040 0%, #c87020 52%, #9a4c0c 100%);
+    border-radius: 12px 12px 26px 26px;
+    box-shadow: 0 10px 36px rgba(190,100,0,0.55), inset 0 2px 12px rgba(255,255,255,0.22), inset 0 -4px 16px rgba(0,0,0,0.32);
+    border: 2px solid rgba(255,255,255,0.14);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; overflow: hidden; pointer-events: none;
+  }
+  .dt-stakan::before {
+    content: ''; position: absolute; top: 0; left: 12px; right: 12px;
+    height: 3px; background: rgba(255,255,255,0.28); border-radius: 0 0 6px 6px;
+  }
+  .dt-stakan::after {
+    content: ''; position: absolute; top: 10px; bottom: 10px; left: 7px;
+    width: 3px; background: rgba(255,255,255,0.1); border-radius: 3px;
+  }
+  .dt-stakan-top { font-size: 22px; margin-bottom: 1px; line-height: 1; }
+  .dt-stakan-num {
+    font-size: 54px; font-weight: 900; color: rgba(255,255,255,0.97);
+    text-shadow: 0 2px 14px rgba(0,0,0,0.55); line-height: 1;
+  }
+  .dt-stakan-sub {
+    font-size: 10px; color: rgba(255,255,255,0.48); margin-top: 5px; text-align: center; line-height: 1.3;
+  }
   @keyframes dtShake {
     0%,100% { transform: rotate(0deg) scale(1); }
-    10%      { transform: rotate(-20deg) scale(1.14) translateY(-12px); }
-    25%      { transform: rotate(18deg)  scale(1.10) translateY(-7px); }
-    40%      { transform: rotate(-13deg) scale(1.12) translateY(-10px); }
-    55%      { transform: rotate(10deg)  scale(1.07) translateY(-4px); }
-    70%      { transform: rotate(-5deg)  scale(1.04); }
+    10%      { transform: rotate(-22deg) scale(1.16) translateY(-14px); }
+    25%      { transform: rotate(19deg)  scale(1.11) translateY(-8px); }
+    40%      { transform: rotate(-14deg) scale(1.13) translateY(-11px); }
+    55%      { transform: rotate(11deg)  scale(1.08) translateY(-5px); }
+    70%      { transform: rotate(-6deg)  scale(1.04); }
     85%      { transform: rotate(3deg)   scale(1.02); }
   }
   .dt-cup.dt-shaking { animation: dtShake 0.75s ease-in-out; }
@@ -2004,15 +2028,6 @@
     position: absolute; top: 50%; left: 50%;
     transform: translate(-50%,-50%); font-size: 22px; font-weight: 900; color: #fff;
   }
-  .dt-roll-btn {
-    width: calc(100% - 32px); margin: 0 16px; padding: 16px; border-radius: 14px; border: none;
-    background: linear-gradient(135deg, var(--gold), var(--gold2));
-    color: #000; font-size: 17px; font-weight: 900; cursor: pointer;
-    box-shadow: 0 4px 20px rgba(255,165,0,0.35); letter-spacing: 0.5px;
-    transition: opacity 0.2s, transform 0.1s;
-  }
-  .dt-roll-btn:disabled { opacity: 0.38; cursor: default; transform: none !important; }
-  .dt-roll-btn:active:not(:disabled) { transform: scale(0.97); }
   .dt-pl-btn {
     flex: 1; padding: 12px 6px; text-align: center; border-radius: 10px;
     background: var(--card2); border: 2px solid var(--border); color: var(--text);
@@ -2733,7 +2748,13 @@
 
     <!-- Стакан + таймер -->
     <div class="dt-cup-zone">
-      <div id="dtCupEmoji" class="dt-cup" onclick="dtTapCup()">🎲</div>
+      <div id="dtCupEmoji" class="dt-cup" onclick="dtTapCup()">
+        <div class="dt-stakan">
+          <div class="dt-stakan-top" id="dtStakanTop">🎲🎲</div>
+          <div class="dt-stakan-num" id="dtStakanNum">?</div>
+          <div class="dt-stakan-sub" id="dtStakanSub">Нажмите!</div>
+        </div>
+      </div>
       <div id="dtTimerWrap" style="display:none">
         <div class="dt-timer-ring">
           <svg width="62" height="62" viewBox="0 0 62 62">
@@ -2746,11 +2767,6 @@
       </div>
       <div id="dtCupHint" style="font-size:13px;color:var(--muted);text-align:center;line-height:1.6">Ждём игроков...</div>
     </div>
-
-    <!-- Кнопка броска -->
-    <button id="dtRollBtn" class="dt-roll-btn" onclick="dtTapCup()" style="display:none;margin-bottom:14px">
-      🎲&nbsp; Бросить кости!
-    </button>
 
     <!-- Кнопка выхода (после результата) -->
     <button id="dtCloseBtn" onclick="dtLeaveGame()" style="display:none;width:calc(100% - 32px);margin:0 16px 20px;padding:14px;border-radius:14px;border:1px solid var(--border);background:var(--card2);color:var(--text);font-size:15px;font-weight:700;cursor:pointer">
@@ -7568,44 +7584,58 @@ function dtRenderGameView(table) {
     for (let i = 0; i < table.max_players; i++) {
       const p = table.players[i];
       if (!p) {
-        html += `<div class="dt-player-slot dt-p-empty">
-          <div style="font-size:28px;margin-bottom:5px;color:var(--muted)">+</div>
-          <div style="font-size:11px;color:var(--muted)">Ожидание</div>
-          <div style="font-size:20px;margin-top:6px;color:var(--border)">?</div>
+        html += `<div class="dt-player-slot dt-p-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div style="font-size:26px;margin-bottom:4px;opacity:0.25">🎲🎲</div>
+          <div style="font-size:11px;color:var(--muted)">Свободно</div>
         </div>`;
         continue;
       }
       const isMe = String(p.user_id) === String(state.userId);
       const isWinner = table.winner_id && String(p.user_id) === String(table.winner_id);
       const cls = 'dt-player-slot' + (isWinner ? ' dt-p-winner' : p.rolled ? ' dt-p-rolled' : '');
-      const rollColor = isWinner ? 'var(--gold)' : p.roll ? 'var(--green)' : 'var(--muted)';
-      const rollDisplay = p.roll ? _dtDiceEmoji(p.roll) : (p.rolled ? '⌛' : '?');
-      const rollFontSize = p.roll ? '34' : '22';
       const avatarHtml = p.avatar && p.avatar.startsWith('http')
-        ? `<img src="${_esc(p.avatar)}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;display:block;margin:0 auto">`
-        : `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;margin:0 auto">${_esc((p.username||'?')[0].toUpperCase())}</div>`;
-      html += `<div class="${cls}">
+        ? `<img src="${_esc(p.avatar)}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;display:block;margin:0 auto">`
+        : `<div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--blue));display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;margin:0 auto">${_esc((p.username||'?')[0].toUpperCase())}</div>`;
+
+      let rollSection;
+      if (p.roll) {
+        const numColor = isWinner ? 'var(--gold)' : '#3ecf72';
+        rollSection = `<div style="font-size:54px;font-weight:900;color:${numColor};line-height:1;margin-top:4px;text-shadow:0 0 20px ${numColor}44">${p.roll}</div>
+          ${isWinner ? `<div style="font-size:11px;color:var(--gold);font-weight:900;margin-top:2px">👑 победитель</div>` : ''}`;
+      } else if (p.rolled) {
+        rollSection = `<div style="font-size:22px;margin-top:8px">⌛</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px">Бросил</div>`;
+      } else {
+        rollSection = `<div style="font-size:22px;margin-top:8px;opacity:0.35">🎲</div>`;
+      }
+
+      html += `<div class="${cls}" style="display:flex;flex-direction:column;align-items:center;justify-content:center">
         <div style="margin-bottom:5px">${avatarHtml}</div>
-        <div style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">${_esc(p.username)}${isMe ? ' <span style="color:var(--muted);font-weight:400">(Вы)</span>' : ''}</div>
-        <div style="font-size:${rollFontSize}px;font-weight:900;color:${rollColor};margin-top:5px;line-height:1">${rollDisplay}</div>
-        ${p.roll ? `<div style="font-size:10px;color:${rollColor};margin-top:3px">${p.roll}&nbsp;${p.roll===1?'очко':p.roll<5?'очка':'очков'}</div>` : ''}
-        ${isWinner ? `<div style="font-size:10px;color:var(--gold);font-weight:800;margin-top:4px">🏆 ПОБЕДИТЕЛЬ</div>` : ''}
+        <div style="font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90%;text-align:center">${_esc(p.username)}${isMe ? `<span style="color:var(--muted);font-weight:400"> (Вы)</span>` : ''}</div>
+        ${rollSection}
       </div>`;
     }
     grid.innerHTML = html;
   }
 
-  const hintEl  = document.getElementById('dtCupHint');
-  const rollBtn = document.getElementById('dtRollBtn');
+  // Обновить стакан
+  const stakanTop = document.getElementById('dtStakanTop');
+  const stakanNum = document.getElementById('dtStakanNum');
+  const stakanSub = document.getElementById('dtStakanSub');
+  const cupEl     = document.getElementById('dtCupEmoji');
+  const hintEl    = document.getElementById('dtCupHint');
   const timerWrap = document.getElementById('dtTimerWrap');
   const closeBtn  = document.getElementById('dtCloseBtn');
 
   if (table.phase === 'waiting') {
     dtState.phase = 'waiting';
-    if (hintEl) hintEl.innerHTML = `Ждём игроков...<br><span style="color:var(--text);font-size:16px;font-weight:700">${table.current_players}/${table.max_players}</span>`;
-    if (rollBtn) rollBtn.style.display = 'none';
+    if (stakanTop) stakanTop.textContent = '🎲🎲';
+    if (stakanNum) stakanNum.textContent = '?';
+    if (stakanSub) stakanSub.textContent = 'Ждём...';
+    if (cupEl)    cupEl.style.cursor = 'default';
+    if (hintEl)   hintEl.innerHTML = `Ждём игроков<br><span style="color:var(--text);font-size:16px;font-weight:700">${table.current_players}/${table.max_players}</span>`;
     if (timerWrap) timerWrap.style.display = 'none';
-    if (closeBtn) closeBtn.style.display = 'none';
+    if (closeBtn)  closeBtn.style.display = 'none';
     dtStopTimer();
 
   } else if (table.phase === 'rolling') {
@@ -7613,21 +7643,34 @@ function dtRenderGameView(table) {
       dtState.phase = 'rolling';
       dtStartTimer();
     }
-    if (hintEl) hintEl.textContent = dtState.hasRolled ? 'Ждём остальных игроков...' : 'Нажмите чтобы бросить кости!';
-    if (rollBtn) {
-      rollBtn.style.display = 'block';
-      rollBtn.disabled = dtState.hasRolled;
-      rollBtn.textContent = dtState.hasRolled ? '✅ Уже брошено!' : '🎲  Бросить кости!';
+    if (cupEl) cupEl.style.cursor = 'pointer';
+    if (dtState.hasRolled) {
+      if (stakanTop) stakanTop.textContent = '';
+      if (stakanNum) stakanNum.textContent = '✅';
+      if (stakanSub) stakanSub.textContent = 'Ждём других';
+      if (hintEl)   hintEl.textContent = 'Ждём остальных игроков...';
+    } else {
+      if (stakanTop) stakanTop.textContent = '🎲🎲';
+      if (stakanNum) stakanNum.textContent = '?';
+      if (stakanSub) stakanSub.textContent = 'Нажмите!';
+      if (hintEl)   hintEl.textContent = 'Нажмите на стаканчик, чтобы бросить кубики';
     }
     if (timerWrap) timerWrap.style.display = 'flex';
-    if (closeBtn) closeBtn.style.display = 'none';
+    if (closeBtn)  closeBtn.style.display = 'none';
 
   } else if (table.phase === 'result') {
     dtState.phase = 'result';
     dtStopTimer();
-    if (hintEl) hintEl.textContent = '';
-    if (rollBtn) rollBtn.style.display = 'none';
+    if (cupEl) cupEl.style.cursor = 'default';
     if (timerWrap) timerWrap.style.display = 'none';
+    if (hintEl)   hintEl.textContent = '';
+    // Показать свой результат в стакане
+    if (myEntry && myEntry.roll) {
+      const amIWinner = String(table.winner_id) === String(state.userId);
+      if (stakanTop) stakanTop.textContent = amIWinner ? '👑' : '';
+      if (stakanNum) stakanNum.textContent = String(myEntry.roll);
+      if (stakanSub) stakanSub.textContent = amIWinner ? 'Вы победили!' : 'Ваш результат';
+    }
     dtShowWinnerBanner(table);
     if (closeBtn) {
       closeBtn.style.display = 'none';
@@ -7637,17 +7680,10 @@ function dtRenderGameView(table) {
       const iv = setInterval(() => {
         sec--;
         if (cntEl) cntEl.textContent = sec > 0 ? `Закрыть через ${sec} сек...` : '';
-        if (sec <= 0) {
-          clearInterval(iv);
-          if (closeBtn) closeBtn.style.display = 'block';
-        }
+        if (sec <= 0) { clearInterval(iv); if (closeBtn) closeBtn.style.display = 'block'; }
       }, 1000);
     }
   }
-}
-
-function _dtDiceEmoji(n) {
-  return ['⚀','⚁','⚂','⚃','⚄','⚅'][n - 1] || String(n);
 }
 
 function dtShowWinnerBanner(table) {
@@ -7678,13 +7714,18 @@ function dtTapCup() {
   const cup = document.getElementById('dtCupEmoji');
   if (cup) {
     cup.classList.remove('dt-shaking');
-    void cup.offsetWidth; // reflow
+    void cup.offsetWidth;
     cup.classList.add('dt-shaking');
     setTimeout(() => cup.classList.remove('dt-shaking'), 800);
   }
   dtState.hasRolled = true;
-  const btn = document.getElementById('dtRollBtn');
-  if (btn) { btn.disabled = true; btn.textContent = '✅ Уже брошено!'; }
+  // Обновить стаканчик сразу
+  const stakanTop = document.getElementById('dtStakanTop');
+  const stakanNum = document.getElementById('dtStakanNum');
+  const stakanSub = document.getElementById('dtStakanSub');
+  if (stakanTop) stakanTop.textContent = '';
+  if (stakanNum) stakanNum.textContent = '⌛';
+  if (stakanSub) stakanSub.textContent = 'Ждём других';
   const hintEl = document.getElementById('dtCupHint');
   if (hintEl) hintEl.textContent = 'Ждём остальных игроков...';
   try { window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('medium'); } catch(e) {}
