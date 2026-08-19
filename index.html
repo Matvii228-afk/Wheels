@@ -7554,6 +7554,8 @@ const dtState = {
   timerSec: 10,
   phase: null,
   shownRoll: null,
+  pendingDice: null,
+  revealTimer: null,
 };
 let dtSelMaxPlayers = 2;
 
@@ -7583,7 +7585,7 @@ function _dtSplitDice(total) {
 }
 
 // Перегенерировать кубики целиком: значения, позиции, углы, анимация падения
-function dtRenderDice(total) {
+function _dtPaintDice(total) {
   const layer   = document.getElementById('dtDiceLayer');
   const totalEl = document.getElementById('dtDiceTotal');
   if (!layer) return;
@@ -7597,20 +7599,45 @@ function dtRenderDice(total) {
   if (totalEl) totalEl.textContent = String(total);
 }
 
+// Если сцена ещё не показана — придержим результат, чтобы анимация падения проигралась
+function dtRenderDice(total) {
+  const stage = document.getElementById('dtDiceStage');
+  if (stage && stage.style.display === 'none') {
+    dtState.pendingDice = total;
+    return;
+  }
+  dtState.pendingDice = null;
+  _dtPaintDice(total);
+}
+
+function _dtRevealStage() {
+  const stage = document.getElementById('dtDiceStage');
+  if (!stage) return;
+  stage.style.display = 'block';
+  if (dtState.pendingDice != null) {
+    const t = dtState.pendingDice;
+    dtState.pendingDice = null;
+    _dtPaintDice(t);
+  }
+}
+
 function dtShowDiceStage(instant) {
   const cup   = document.getElementById('dtCupEmoji');
   const stage = document.getElementById('dtDiceStage');
   if (instant) {
-    if (cup)   { cup.classList.remove('dt-cup-gone'); cup.style.display = 'none'; }
-    if (stage) stage.style.display = 'block';
+    if (cup) { cup.classList.remove('dt-cup-gone'); cup.style.display = 'none'; }
+    _dtRevealStage();
     return;
   }
-  if (cup && cup.style.display !== 'none') {
+  if (cup && cup.style.display !== 'none' && !cup.classList.contains('dt-cup-gone')) {
     cup.classList.add('dt-cup-gone');
     setTimeout(() => { cup.style.display = 'none'; }, 330);
   }
-  if (stage && stage.style.display === 'none') {
-    setTimeout(() => { stage.style.display = 'block'; }, 260);
+  if (stage && stage.style.display === 'none' && !dtState.revealTimer) {
+    dtState.revealTimer = setTimeout(() => {
+      dtState.revealTimer = null;
+      _dtRevealStage();
+    }, 260);
   }
 }
 
@@ -7618,10 +7645,12 @@ function dtHideDiceStage() {
   const cup   = document.getElementById('dtCupEmoji');
   const stage = document.getElementById('dtDiceStage');
   const layer = document.getElementById('dtDiceLayer');
+  if (dtState.revealTimer) { clearTimeout(dtState.revealTimer); dtState.revealTimer = null; }
   if (cup)   { cup.classList.remove('dt-cup-gone'); cup.style.display = ''; }
   if (stage) stage.style.display = 'none';
   if (layer) layer.innerHTML = '';
   dtState.shownRoll = null;
+  dtState.pendingDice = null;
 }
 
 function dtOpenCreate() {
@@ -7827,25 +7856,22 @@ function dtShowWinnerBanner(table) {
 function dtTapCup() {
   if (dtState.hasRolled || dtState.phase !== 'rolling') return;
   dtState.hasRolled = true;
-
-  // Стакан исчезает, из него выпадают кубики
-  dtShowDiceStage();
-
-  // Рандом показываем сразу — кубики крутятся до ответа сервера
   dtStopSpin();
-  setTimeout(() => {
-    if (dtState.shownRoll) return;
-    dtRenderDice(2 + Math.floor(Math.random() * 11));
-    dtState.spinInterval = setInterval(() => {
-      if (dtState.shownRoll) { dtStopSpin(); return; }
-      dtRenderDice(2 + Math.floor(Math.random() * 11));
-    }, 150);
-  }, 270);
+
+  // Сразу шлём бросок — сервер вернёт окончательный результат,
+  // он же уйдёт противнику. Ничего не выдумываем локально.
+  wsSend({ action: 'dice_roll', table_id: dtState.currentTableId });
+
+  // Стакан исчезает, кубики выпадут с реальным значением
+  const layer   = document.getElementById('dtDiceLayer');
+  const totalEl = document.getElementById('dtDiceTotal');
+  if (layer)   layer.innerHTML = '';
+  if (totalEl) totalEl.textContent = '';
+  dtShowDiceStage();
 
   const hintEl = document.getElementById('dtCupHint');
   if (hintEl) hintEl.textContent = 'Ждём остальных игроков...';
   try { window.Telegram?.WebApp?.HapticFeedback?.impactOccurred('medium'); } catch(e) {}
-  wsSend({ action: 'dice_roll', table_id: dtState.currentTableId });
 }
 
 function dtPaintTimer() {
