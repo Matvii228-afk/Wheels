@@ -7556,6 +7556,7 @@ const dtState = {
   shownRoll: null,
   pendingDice: null,
   revealTimer: null,
+  round: 1,
 };
 let dtSelMaxPlayers = 2;
 
@@ -7695,6 +7696,7 @@ function dtEnterGame(tableId, table) {
   dtState.currentTable = table;
   dtState.hasRolled = false;
   dtState.phase = table.phase;
+  dtState.round = table.round || 1;
   dtStopSpin();
   document.getElementById('dtLobbyView').style.display = 'none';
   const gv = document.getElementById('dtGameView');
@@ -7710,6 +7712,7 @@ function dtLeaveGame() {
   dtState.currentTable = null;
   dtState.hasRolled = false;
   dtState.phase = null;
+  dtState.round = 1;
   document.getElementById('dtGameView').style.display = 'none';
   document.getElementById('dtLobbyView').style.display = 'block';
   dtHideDiceStage();
@@ -7725,6 +7728,18 @@ function dtRenderGameView(table) {
   if (betEl) betEl.textContent = Math.floor(table.bet).toLocaleString('ru') + _cur();
 
   const myEntry = (table.players || []).find(p => String(p.user_id) === String(state.userId));
+
+  // ── Ничья: сервер поднял номер раунда → полный сброс и перекид ──
+  const tblRound = table.round || 1;
+  const isReRoll = tblRound !== dtState.round;
+  if (isReRoll) {
+    dtState.round = tblRound;
+    dtState.hasRolled = false;
+    dtStopSpin();
+    dtHideDiceStage();
+    if (table.phase === 'rolling') dtStartTimer();
+  }
+
   if (myEntry && myEntry.rolled) dtState.hasRolled = true;
 
   // Рендер ячеек игроков
@@ -7805,15 +7820,19 @@ function dtRenderGameView(table) {
       dtStartTimer();
     }
     if (cupEl) cupEl.style.cursor = dtState.hasRolled ? 'default' : 'pointer';
+    const tie = table.tie;
+    const tieHint = tie
+      ? `<span style="color:var(--gold);font-weight:800">🤝 Ничья на ${tie.roll} — перекид!</span><br>`
+      : '';
     if (myEntry && myEntry.roll) {
       settleDice(!dtState.hasRolled);
-      if (hintEl) hintEl.textContent = 'Ждём остальных игроков...';
+      if (hintEl) hintEl.innerHTML = tieHint + 'Ждём остальных игроков...';
     } else if (dtState.hasRolled) {
-      if (hintEl) hintEl.textContent = 'Ждём остальных игроков...';
+      if (hintEl) hintEl.innerHTML = tieHint + 'Ждём остальных игроков...';
     } else {
       dtPaintTimer();
       if (stakanTop) stakanTop.textContent = '';
-      if (hintEl)   hintEl.textContent = 'Нажмите на стаканчик, чтобы бросить кубики';
+      if (hintEl)   hintEl.innerHTML = tieHint + 'Нажмите на стаканчик, чтобы бросить кубики';
     }
     if (closeBtn)  closeBtn.style.display = 'none';
 
